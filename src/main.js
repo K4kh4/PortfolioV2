@@ -97,6 +97,7 @@ Object.entries(textureMap).forEach(([key, value]) => {
 // racating
 const raycastObjects = [];
 let currentIntersect = [];
+let currentHoverObject;
 let notebookObject;
 //model loader
 const dracoLoader = new DRACOLoader();
@@ -130,6 +131,12 @@ loader.load("/models/Room_V1-Compresed.glb", (gltf) => {
       // setting up layers 
       if (child.name.includes("Raycaster")) {
         raycastObjects.push(child);
+      }
+      if (child.name.includes("Hover")) {
+        child.userData.initialPosition = new THREE.Vector3().copy(child.position);
+        child.userData.initialRotation = new THREE.Euler().copy(child.rotation);
+        child.userData.initialScale = new THREE.Vector3().copy(child.scale);
+        child.userData.isAnimating = false;
       }
       if (child.name.includes("Third_notebook_MyWork_Top_Raycaster_Pointer")) {
         notebookObject = child;
@@ -201,44 +208,45 @@ const Update = () => {
   raycaster.setFromCamera(pointer, camera);
   currentIntersect = raycaster.intersectObjects(raycastObjects);
 
-  for (let i = 0; i < currentIntersect.length; i++) {
-    if (currentIntersect[i].object.name.includes("Hover")) {
-      PopObject(currentIntersect[i].object);
-    }
 
-  }
 
 
   if (currentIntersect.length > 0) {
     // need to add ayerrs ike clickable, hoverable, animated, 
     const currentIntersectObject = currentIntersect[0].object;
-    if (currentIntersectObject.name.includes("Pointer")) {
-      document.body.style.cursor = "pointer";
+    if (currentIntersectObject.name.includes("Hover")) {
+      if (currentIntersectObject !== currentHoverObject) {
+        if (currentHoverObject) {
+          OnHover(currentHoverObject, false);
+        }
+        OnHover(currentIntersectObject, true);
+        currentHoverObject = currentIntersectObject;
+      }
+    }
 
+    if (currentIntersectObject.name.includes("Pointer")) {
+
+      document.body.style.cursor = "pointer";
     }
     else {
+      if (currentHoverObject != null) {
+        OnHover(currentHoverObject, false);
+      }
+      currentHoverObject = null;
       document.body.style.cursor = "default";
     }
 
   }
   else {
-    
+
+    if (currentHoverObject != null) {
+      OnHover(currentHoverObject, false);
+    }
+    currentHoverObject = null;
     document.body.style.cursor = "default";
   }
 
   window.requestAnimationFrame(Update);
-}
-
-//functions
-function PopObject(object) {
-  gsap.to(object.scale, {
-    x: 1.1,
-    y: 1.1,
-    z: 1.1,
-    duration: 0.1,
-    ease: 'power2.inOut'
-  })
- 
 }
 
 function OpenNoteBook(object) {
@@ -276,6 +284,48 @@ function zoomCameraTo() {
     ease: 'power2.inOut'
   })
 }
+function OnHover(object, isHovering) {
+  gsap.killTweensOf(object.scale);
+  gsap.killTweensOf(object.rotation);
+  gsap.killTweensOf(object.position);
+
+  if (isHovering) {
+    gsap.to(object.scale, {
+      x: object.userData.initialScale.x + 0.1,
+      y: object.userData.initialScale.y + 0.1,
+      z: object.userData.initialScale.z + 0.1,
+      duration: 0.1,
+      ease: 'power2.inOut',
+    })
+  }
+  else {
+    gsap.to(object.scale, {
+      x: object.userData.initialScale.x,
+      y: object.userData.initialScale.y,
+      z: object.userData.initialScale.z,
+      duration: 0.1,
+      ease: 'power2.inOut',
+
+    })
+    gsap.to(object.rotation, {
+      x: object.userData.initialRotation.x,
+      y: object.userData.initialRotation.y,
+      z: object.userData.initialRotation.z,
+      duration: 0.1,
+      ease: 'power2.inOut',
+
+    })
+    gsap.to(object.position, {
+      x: object.userData.initialPosition.x,
+      y: object.userData.initialPosition.y,
+      z: object.userData.initialPosition.z,
+      duration: 0.1,
+      ease: 'power2.inOut',
+    })
+  }
+}
+
+
 //start update loop
 Update();
 
