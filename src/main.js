@@ -7,11 +7,71 @@ import './style.scss'
 import gsap from 'gsap';
 
 //notebook
+let notebookObject;
+
+// Interactive objects list - each object has a 3D object reference and corresponding modal
+const interactiveObjects = [
+  {
+    name: "Button_MyWork",
+    object: null, // Will be set when loading the model
+    modal: "work",
+    action: "openNotebook" // Special action for this button
+  },
+  {
+    name: "Button_About",
+    object: null,
+    modal: "about",
+    action: "showModal"
+  },
+  {
+    name: "Button_Contact",
+    object: null,
+    modal: "contact",
+    action: "showModal"
+  },
+  {
+    name: "WorkButton_1",
+    object: null,
+    modal: "work1",
+    action: "showModal"
+  },
+  {
+    name: "WorkButton_2",
+    object: null,
+    modal: "work2",
+    action: "showModal"
+  },
+  {
+    name: "WorkButton_3",
+    object: null,
+    modal: "work3",
+    action: "showModal"
+  },
+  {
+    name: "WorkButton_4",
+    object: null,
+    modal: "work4",
+    action: "showModal"
+  },
+  {
+    name: "WorkButton_5",
+    object: null,
+    modal: "work5",
+    action: "showModal"
+  }
+
+];
+
+//
 
 
 //modals
 const Modals = {
-  work: document.querySelector('.modal.work'),
+  work1: document.querySelector('.modal.work1'),
+  work2: document.querySelector('.modal.work2'),
+  work3: document.querySelector('.modal.work3'),
+  work4: document.querySelector('.modal.work4'),
+  work5: document.querySelector('.modal.work5'),
   about: document.querySelector('.modal.about'),
   contact: document.querySelector('.modal.contact')
 }
@@ -98,7 +158,6 @@ Object.entries(textureMap).forEach(([key, value]) => {
 const raycastObjects = [];
 let currentIntersect = [];
 let currentHoverObject;
-let notebookObject;
 //model loader
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath('/draco/');
@@ -141,9 +200,23 @@ loader.load("/models/Room_V1-Compresed.glb", (gltf) => {
       if (child.name.includes("Third_notebook_MyWork_Top_Raycaster_Pointer")) {
         notebookObject = child;
       }
+
+      // Check if this object matches any interactive object
+      interactiveObjects.forEach(interactiveObj => {
+        if (child.name.includes(interactiveObj.name)) {
+          interactiveObj.object = child;
+          console.log(`Found interactive object: ${interactiveObj.name}`);
+          if (interactiveObj.name.includes("WorkButton_")) {
+            child.scale.set(0, 0, 0);
+          }
+        }
+      });
     }
   })
   scene.add(gltf.scene)
+
+  // Log which interactive objects were found
+  logInteractiveObjectsStatus();
 })
 //model loader end
 
@@ -188,11 +261,64 @@ function OnClick() {
   if (currentIntersect.length > 0) {
     const currentIntersectObject = currentIntersect[0].object;
     if (currentIntersectObject.name.includes("Pointer")) {
-      if (currentIntersectObject.name.includes("Button_MyWork")) {
-        OpenNoteBook(notebookObject);
+
+      // Check if the clicked object matches any interactive object
+      const clickedInteractiveObject = interactiveObjects.find(interactiveObj =>
+        currentIntersectObject.name.includes(interactiveObj.name)
+      );
+
+      if (clickedInteractiveObject) {
+        handleObjectClick(clickedInteractiveObject);
       }
     }
   }
+}
+
+// Handle different types of object clicks
+function handleObjectClick(interactiveObject) {
+  console.log(`Clicked on: ${interactiveObject.name}`);
+  console.log(interactiveObject.modal);
+  switch (interactiveObject.action) {
+    case "openNotebook":
+      OpenNoteBook(notebookObject);
+      break;
+
+    case "showModal":
+      if (interactiveObject.modal && Modals[interactiveObject.modal]) {
+        showModal(Modals[interactiveObject.modal]);
+      }
+      break;
+
+    default:
+      console.warn(`Unknown action: ${interactiveObject.action}`);
+  }
+}
+
+// Helper function to add new interactive objects dynamically
+function addInteractiveObject(name, modalName, action = "showModal") {
+  const newObject = {
+    name: name,
+    object: null,
+    modal: modalName,
+    action: action
+  };
+
+  interactiveObjects.push(newObject);
+  console.log(`Added new interactive object: ${name}`);
+  return newObject;
+}
+
+// Helper function to get all loaded interactive objects
+function getLoadedInteractiveObjects() {
+  return interactiveObjects.filter(obj => obj.object !== null);
+}
+
+// Helper function to log all interactive objects status
+function logInteractiveObjectsStatus() {
+  console.log("Interactive Objects Status:");
+  interactiveObjects.forEach(obj => {
+    console.log(`- ${obj.name}: ${obj.object ? 'Loaded' : 'Not Found'} (Modal: ${obj.modal}, Action: ${obj.action})`);
+  });
 }
 
 //event listeners
@@ -255,11 +381,31 @@ function OpenNoteBook(object) {
     y: 0,
     z: 0,
     duration: 0.5,
-    ease: 'power2.inOut'
+    ease: 'power2.inOut',
+    onComplete: function () { interactiveObjects.forEach(interactiveObj => {
+      if (interactiveObj.name.includes("WorkButton_")) {
+        gsap.killTweensOf(interactiveObj.object.scale);
+        interactiveObj.object.scale.set(0, 0, 0);
+        interactiveObj.object.show = true;
+        gsap.to(interactiveObj.object.scale, {
+          x: interactiveObj.object.userData.initialScale.x,
+          y: interactiveObj.object.userData.initialScale.y,
+          z: interactiveObj.object.userData.initialScale.z,
+          duration: 0.1,
+          ease: 'power2.inOut',
+        })
+      }
+    }) },
   })
   zoomCameraTo(object);
 }
 function CloseNoteBook(object) {
+  interactiveObjects.forEach(interactiveObj => {
+    if (interactiveObj.name.includes("WorkButton_")) {
+      gsap.killTweensOf(interactiveObj.object.scale);
+      interactiveObj.object.scale.set(0, 0, 0);
+    }
+  })
   gsap.to(object.rotation, {
     x: 0,
     y: 0,
