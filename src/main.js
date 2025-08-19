@@ -75,11 +75,13 @@ let Modals = {};
 
 // Unified modal management functions
 const openModal = (modalClass) => {
-  console.log(`openModal called with: ${modalClass}`);
+
+  // Check if any modal is currently open
+  const currentActiveModal = document.querySelector('.modal.active');
+  const isAnotherModalOpen = currentActiveModal && !currentActiveModal.classList.contains(modalClass);
 
   // Close any open modals first (but don't wait for animation)
-  const currentActiveModal = document.querySelector('.modal.active');
-  if (currentActiveModal && !currentActiveModal.classList.contains(modalClass)) {
+  if (isAnotherModalOpen) {
     currentActiveModal.classList.remove('active');
     currentActiveModal.style.display = 'none';
   }
@@ -88,10 +90,8 @@ const openModal = (modalClass) => {
   const modal = typeof modalClass === 'string' ?
     document.querySelector('.modal.' + modalClass) : modalClass;
 
-  console.log(`Found modal element:`, modal);
 
   if (modal) {
-    console.log(`Opening modal with classes: ${modal.className}`);
 
     // Clear any previous GSAP properties and reset modal state
     gsap.killTweensOf(modal);
@@ -110,11 +110,29 @@ const openModal = (modalClass) => {
     else if (modal.classList.contains('work4')) currentWork = 4;
     else if (modal.classList.contains('work5')) currentWork = 5;
 
-    // Apply GSAP animation with fresh start
-    gsap.fromTo(modal,
-      { opacity: 0 },
-      { opacity: 1, duration: 0.5, ease: "power2.out" }
-    );
+    // Choose animation based on whether another modal was open
+    if (isAnotherModalOpen) {
+      // Instant switch - no animation
+      gsap.set(modal, { 
+        opacity: 1,
+        scale: 1,
+        transformOrigin: "center center"
+      });
+      console.log(`Modal switched instantly: ${modalClass}`);
+    } else {
+      // Scale up animation from 0 to fill screen
+      gsap.set(modal, { 
+        opacity: 1,
+        scale: 0,
+        transformOrigin: "center center"
+      });
+      gsap.to(modal, {
+        scale: 1,
+        duration: 0.5,
+        ease: "back.out(1.7)"
+      });
+      console.log(`Modal opened with scale animation: ${modalClass}`);
+    }
 
     console.log(`Modal opened successfully: ${modalClass}`);
   } else {
@@ -127,7 +145,9 @@ const closeModal = () => {
   if (activeModal) {
     gsap.to(activeModal, {
       opacity: 0,
+      scale: 0,
       duration: 0.5,
+      ease: "back.in(1.7)",
       onComplete: () => {
         activeModal.classList.remove('active');
         // Clear any GSAP properties that might interfere
