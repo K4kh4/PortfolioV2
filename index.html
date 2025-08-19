@@ -51,18 +51,19 @@
       display: flex;
       width: 100%;
       height: 100%;
-      font-family: 'Arial', sans-serif;
+      font-family: 'Helvetica', sans-serif;
       color: #ffffff;
     }
 
-    /* Left column - Logo and Navigation */
+    /* Left column - Logo, Description and Navigation */
     .logo-column {
-      flex: 0 0 300px;
+      flex: 0 0 450px;
       padding: 60px 40px;
       background-color: #1a1a1a;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      justify-content: flex-start;
+      gap: 40px;
     }
 
     .brand-name {
@@ -111,58 +112,56 @@
       cursor: not-allowed;
     }
 
-    /* Middle column - Text Content */
-    .text-column {
+    /* Project content styles (now in logo-column) */
+    .project-content {
       flex: 1;
-      padding: 60px 60px;
-      background-color: #1a1a1a;
       overflow-y: auto;
     }
 
     .project-title {
-      font-size: 2.8rem;
+      font-size: 2.2rem;
       font-weight: bold;
-      margin-bottom: 40px;
+      margin-bottom: 30px;
       color: #ffffff;
       line-height: 1.1;
     }
 
     .project-description {
-      font-size: 1.1rem;
+      font-size: 1rem;
       line-height: 1.6;
       color: #cccccc;
-      margin-bottom: 35px;
+      margin-bottom: 25px;
     }
 
     .credits {
-      margin-bottom: 40px;
+      margin-bottom: 30px;
     }
 
     .credit-item {
-      font-size: 1rem;
+      font-size: 0.9rem;
       color: #cccccc;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
     .awards {
-      margin-bottom: 40px;
+      margin-bottom: 30px;
     }
 
     .awards h3 {
-      font-size: 1.1rem;
+      font-size: 1rem;
       color: #ffffff;
-      margin-bottom: 15px;
+      margin-bottom: 12px;
       font-weight: bold;
     }
 
     .award-item {
-      font-size: 1rem;
+      font-size: 0.9rem;
       color: #cccccc;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       line-height: 1.4;
     }
 
-    /* Right column - Scrollable Media */
+    /* Right column - Scrollable Media (now wider) */
     .media-column {
       flex: 1;
       background-color: #0f0f0f;
@@ -203,23 +202,23 @@
 
     /* Custom scrollbars */
     .media-column::-webkit-scrollbar,
-    .text-column::-webkit-scrollbar {
+    .project-content::-webkit-scrollbar {
       width: 8px;
     }
 
     .media-column::-webkit-scrollbar-track,
-    .text-column::-webkit-scrollbar-track {
+    .project-content::-webkit-scrollbar-track {
       background: #1a1a1a;
     }
 
     .media-column::-webkit-scrollbar-thumb,
-    .text-column::-webkit-scrollbar-thumb {
+    .project-content::-webkit-scrollbar-thumb {
       background: #666;
       border-radius: 4px;
     }
 
     .media-column::-webkit-scrollbar-thumb:hover,
-    .text-column::-webkit-scrollbar-thumb:hover {
+    .project-content::-webkit-scrollbar-thumb:hover {
       background: #888;
     }
 
@@ -279,7 +278,7 @@
     /* Responsive design */
     @media (max-width: 1200px) {
       .logo-column {
-        flex: 0 0 250px;
+        flex: 0 0 380px;
         padding: 40px 30px;
       }
       
@@ -287,12 +286,8 @@
         font-size: 2.5rem;
       }
       
-      .text-column {
-        padding: 40px 40px;
-      }
-      
       .project-title {
-        font-size: 2.2rem;
+        font-size: 1.8rem;
       }
     }
 
@@ -304,10 +299,9 @@
       .logo-column {
         flex: none;
         padding: 30px 20px;
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
         height: auto;
+        max-height: 50vh;
+        gap: 20px;
       }
       
       .brand-name {
@@ -318,22 +312,22 @@
         font-size: 0.8rem;
       }
       
-      .navigation {
-        margin-top: 0;
-      }
-      
-      .text-column {
-        padding: 30px 20px;
-        height: auto;
-        max-height: 300px;
-      }
-      
       .project-title {
-        font-size: 1.8rem;
+        font-size: 1.5rem;
+        margin-bottom: 20px;
+      }
+      
+      .project-description {
+        font-size: 0.9rem;
+        margin-bottom: 15px;
+      }
+      
+      .navigation {
+        margin-top: auto;
       }
       
       .media-column {
-        height: 300px;
+        height: 50vh;
         padding: 15px;
       }
       
@@ -364,37 +358,33 @@
     <div class="work-modal-container">
       <div class="logo-column">
         <div class="header">
-          <h1 class="brand-name">CHRIS<br>TSIRIGOTIS</h1>
-          <p class="tagline">That Copywriter Who Doesn't Let Ideas Slip Away</p>
+          <h1 class="brand-name">NATIA<br>KALANDIA</h1>
+          <p class="tagline">Personality hire copywriter</p>
         </div>
+        
+        <div class="project-content">
+          <h2 class="project-title">N26<br>banking you way</h2>
+          
+          <p class="project-description">
+            N26 is a digital bank that offers a seamless banking experience. It's a bank that you can use to manage your money, pay your bills, and invest your money.
+          </p>
+
+          <p class="project-description">
+            N26 is a digital bank that offers a seamless banking experience. It's a bank that you can use to manage your money, pay your bills, and invest your money.
+          </p>
+
+          <div class="credits">
+            <div class="credit-item">Copywriter: Natia Kalandia</div>
+            <div class="credit-item">Art Director: Anya Zainieva</div>
+            <div class="credit-item">Creative Director: luca pristerbach, passcal momper</div>
+            <div class="credit-item">Agency: Potvis</div>
+          </div>
+
+        </div>
+        
         <div class="navigation">
           <button class="nav-arrow">←</button>
           <button class="nav-arrow">→</button>
-        </div>
-      </div>
-
-      <div class="text-column">
-        <h2 class="project-title">Lidl<br>Pfand ID</h2>
-        
-        <p class="project-description">
-          A great portion of homeless in Germany rely on collecting refundable bottles to survive. But their work goes unnoticed. Pfand ID turns bottle collection into a verified work record, helping collectors access jobs, training, and dignity through a system they already use.
-        </p>
-
-        <p class="project-description">
-          Launched with LIDL and social partners, the campaign doubles bottle refunds for registered collectors and prints real-time "resumes" at Pfand machines. It reframes recycling as labor, making their invisible work visible, bottle by bottle.
-        </p>
-
-        <div class="credits">
-          <div class="credit-item">Art Director: Oguzcan Bozkurt</div>
-          <div class="credit-item">Art Director: Kunal Khade</div>
-          <div class="credit-item">Copywriter: Chris Tsirigotis</div>
-          <div class="credit-item">Copywriter: Francisco Blamey</div>
-        </div>
-
-        <div class="awards">
-          <h3>Awards:</h3>
-          <div class="award-item">Gold - Clios Health 2025 - Creative Use of Data</div>
-          <div class="award-item">Bronze - Clios Health 2025 - Experience / Activation</div>
         </div>
       </div>
 
@@ -430,37 +420,33 @@
     <div class="work-modal-container">
       <div class="logo-column">
         <div class="header">
-          <h1 class="brand-name">CHRIS<br>TSIRIGOTIS</h1>
-          <p class="tagline">That Copywriter Who Doesn't Let Ideas Slip Away</p>
+          <h1 class="brand-name">NATIA<br>KALANDIA</h1>
+          <p class="tagline">Personality hire copywriter</p>
         </div>
+        
+        <div class="project-content">
+          <h2 class="project-title">N26<br>banking you way</h2>
+          
+          <p class="project-description">
+            N26 is a digital bank that offers a seamless banking experience. It's a bank that you can use to manage your money, pay your bills, and invest your money.
+          </p>
+
+          <p class="project-description">
+            N26 is a digital bank that offers a seamless banking experience. It's a bank that you can use to manage your money, pay your bills, and invest your money.
+          </p>
+
+          <div class="credits">
+            <div class="credit-item">Copywriter: Natia Kalandia</div>
+            <div class="credit-item">Art Director: Anya Zainieva</div>
+            <div class="credit-item">Creative Director: luca pristerbach, passcal momper</div>
+            <div class="credit-item">Agency: Potvis</div>
+          </div>
+
+        </div>
+        
         <div class="navigation">
           <button class="nav-arrow">←</button>
           <button class="nav-arrow">→</button>
-        </div>
-      </div>
-
-      <div class="text-column">
-        <h2 class="project-title">Project<br>Alpha</h2>
-        
-        <p class="project-description">
-          This is the description for Project Alpha. A revolutionary approach to digital transformation that bridges the gap between traditional methodologies and cutting-edge innovation.
-        </p>
-
-        <p class="project-description">
-          The project involved comprehensive user research, strategic planning, and innovative implementation across multiple touchpoints to create a seamless user experience.
-        </p>
-
-        <div class="credits">
-          <div class="credit-item">Creative Director: Jane Smith</div>
-          <div class="credit-item">Art Director: Mike Johnson</div>
-          <div class="credit-item">Copywriter: Chris Tsirigotis</div>
-          <div class="credit-item">Developer: Sarah Williams</div>
-        </div>
-
-        <div class="awards">
-          <h3>Awards:</h3>
-          <div class="award-item">Silver - Design Awards 2024 - Innovation</div>
-          <div class="award-item">Bronze - Creative Excellence 2024 - Digital Campaign</div>
         </div>
       </div>
 
@@ -492,34 +478,35 @@
           <h1 class="brand-name">CHRIS<br>TSIRIGOTIS</h1>
           <p class="tagline">That Copywriter Who Doesn't Let Ideas Slip Away</p>
         </div>
+        
+        <div class="project-content">
+          <h2 class="project-title">Digital<br>Innovation</h2>
+          
+          <p class="project-description">
+            A comprehensive digital transformation initiative that reimagines how brands connect with their audiences in the post-digital era. This project explores new frontiers in interactive storytelling.
+          </p>
+
+          <p class="project-description">
+            Through innovative use of emerging technologies and human-centered design, we created an experience that fundamentally changes how users interact with brand narratives.
+          </p>
+
+          <div class="credits">
+            <div class="credit-item">Strategy Lead: Alex Thompson</div>
+            <div class="credit-item">Creative Director: Emily Chen</div>
+            <div class="credit-item">Copywriter: Chris Tsirigotis</div>
+            <div class="credit-item">Tech Lead: David Rodriguez</div>
+          </div>
+
+          <div class="awards">
+            <h3>Awards:</h3>
+            <div class="award-item">Gold - Digital Excellence 2024 - Innovation</div>
+            <div class="award-item">Silver - Tech Awards 2024 - User Experience</div>
+          </div>
+        </div>
+        
         <div class="navigation">
           <button class="nav-arrow">←</button>
           <button class="nav-arrow">→</button>
-        </div>
-      </div>
-
-      <div class="text-column">
-        <h2 class="project-title">Digital<br>Innovation</h2>
-        
-        <p class="project-description">
-          A comprehensive digital transformation initiative that reimagines how brands connect with their audiences in the post-digital era. This project explores new frontiers in interactive storytelling.
-        </p>
-
-        <p class="project-description">
-          Through innovative use of emerging technologies and human-centered design, we created an experience that fundamentally changes how users interact with brand narratives.
-        </p>
-
-        <div class="credits">
-          <div class="credit-item">Strategy Lead: Alex Thompson</div>
-          <div class="credit-item">Creative Director: Emily Chen</div>
-          <div class="credit-item">Copywriter: Chris Tsirigotis</div>
-          <div class="credit-item">Tech Lead: David Rodriguez</div>
-        </div>
-
-        <div class="awards">
-          <h3>Awards:</h3>
-          <div class="award-item">Gold - Digital Excellence 2024 - Innovation</div>
-          <div class="award-item">Silver - Tech Awards 2024 - User Experience</div>
         </div>
       </div>
 
@@ -551,34 +538,35 @@
           <h1 class="brand-name">CHRIS<br>TSIRIGOTIS</h1>
           <p class="tagline">That Copywriter Who Doesn't Let Ideas Slip Away</p>
         </div>
+        
+        <div class="project-content">
+          <h2 class="project-title">Brand<br>Activation</h2>
+          
+          <p class="project-description">
+            A multi-channel brand activation campaign that brought together physical and digital experiences to create meaningful connections between consumers and brand values.
+          </p>
+
+          <p class="project-description">
+            The campaign leveraged experiential marketing, social media amplification, and data-driven insights to create authentic brand moments that resonated across diverse audience segments.
+          </p>
+
+          <div class="credits">
+            <div class="credit-item">Brand Strategist: Maria Garcia</div>
+            <div class="credit-item">Experience Designer: Tom Wilson</div>
+            <div class="credit-item">Copywriter: Chris Tsirigotis</div>
+            <div class="credit-item">Event Producer: Lisa Park</div>
+          </div>
+
+          <div class="awards">
+            <h3>Awards:</h3>
+            <div class="award-item">Gold - Experiential Marketing 2024 - Best Activation</div>
+            <div class="award-item">Silver - Brand Experience 2024 - Multi-Channel Campaign</div>
+          </div>
+        </div>
+        
         <div class="navigation">
           <button class="nav-arrow">←</button>
           <button class="nav-arrow">→</button>
-        </div>
-      </div>
-
-      <div class="text-column">
-        <h2 class="project-title">Brand<br>Activation</h2>
-        
-        <p class="project-description">
-          A multi-channel brand activation campaign that brought together physical and digital experiences to create meaningful connections between consumers and brand values.
-        </p>
-
-        <p class="project-description">
-          The campaign leveraged experiential marketing, social media amplification, and data-driven insights to create authentic brand moments that resonated across diverse audience segments.
-        </p>
-
-        <div class="credits">
-          <div class="credit-item">Brand Strategist: Maria Garcia</div>
-          <div class="credit-item">Experience Designer: Tom Wilson</div>
-          <div class="credit-item">Copywriter: Chris Tsirigotis</div>
-          <div class="credit-item">Event Producer: Lisa Park</div>
-        </div>
-
-        <div class="awards">
-          <h3>Awards:</h3>
-          <div class="award-item">Gold - Experiential Marketing 2024 - Best Activation</div>
-          <div class="award-item">Silver - Brand Experience 2024 - Multi-Channel Campaign</div>
         </div>
       </div>
 
@@ -610,35 +598,36 @@
           <h1 class="brand-name">CHRIS<br>TSIRIGOTIS</h1>
           <p class="tagline">That Copywriter Who Doesn't Let Ideas Slip Away</p>
         </div>
+        
+        <div class="project-content">
+          <h2 class="project-title">Creative<br>Campaign</h2>
+          
+          <p class="project-description">
+            An integrated creative campaign that challenged conventional thinking and pushed boundaries in advertising. The project focused on authentic storytelling and emotional connection.
+          </p>
+
+          <p class="project-description">
+            Through bold creative choices and strategic messaging, the campaign achieved unprecedented engagement rates and became a case study for innovative advertising approaches.
+          </p>
+
+          <div class="credits">
+            <div class="credit-item">Executive Creative Director: Robert Kim</div>
+            <div class="credit-item">Art Director: Nina Patel</div>
+            <div class="credit-item">Copywriter: Chris Tsirigotis</div>
+            <div class="credit-item">Producer: James Mitchell</div>
+          </div>
+
+          <div class="awards">
+            <h3>Awards:</h3>
+            <div class="award-item">Gold - Advertising Excellence 2024 - Creative Campaign</div>
+            <div class="award-item">Silver - Creative Arts 2024 - Copywriting</div>
+            <div class="award-item">Bronze - Marketing Innovation 2024 - Integrated Campaign</div>
+          </div>
+        </div>
+        
         <div class="navigation">
           <button class="nav-arrow">←</button>
           <button class="nav-arrow">→</button>
-        </div>
-      </div>
-
-      <div class="text-column">
-        <h2 class="project-title">Creative<br>Campaign</h2>
-        
-        <p class="project-description">
-          An integrated creative campaign that challenged conventional thinking and pushed boundaries in advertising. The project focused on authentic storytelling and emotional connection.
-        </p>
-
-        <p class="project-description">
-          Through bold creative choices and strategic messaging, the campaign achieved unprecedented engagement rates and became a case study for innovative advertising approaches.
-        </p>
-
-        <div class="credits">
-          <div class="credit-item">Executive Creative Director: Robert Kim</div>
-          <div class="credit-item">Art Director: Nina Patel</div>
-          <div class="credit-item">Copywriter: Chris Tsirigotis</div>
-          <div class="credit-item">Producer: James Mitchell</div>
-        </div>
-
-        <div class="awards">
-          <h3>Awards:</h3>
-          <div class="award-item">Gold - Advertising Excellence 2024 - Creative Campaign</div>
-          <div class="award-item">Silver - Creative Arts 2024 - Copywriting</div>
-          <div class="award-item">Bronze - Marketing Innovation 2024 - Integrated Campaign</div>
         </div>
       </div>
 
