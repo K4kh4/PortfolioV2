@@ -13,13 +13,13 @@ let notebookObject;
 // Interactive objects list - each object has a 3D object reference and corresponding modal
 const interactiveObjects = [
   {
-    name: "Button_MyWork",
+    name: "MyWork_Button",
     object: null, // Will be set when loading the model
-    modal: "about",
+    modal: "work1",
     action: "openNotebook" // Special action for this button
   },
   {
-    name: "Button_About",
+    name: "AboutMe_Button",
     object: null,
     modal: "about",
     action: "showModal"
@@ -355,26 +355,29 @@ loader.load("/models/Room_V1-Compresed.glb", (gltf) => {
   gltf.scene.traverse((child) => {
     if (child.isMesh) {
       //setting up textures
-      if (child.name.includes("First")) {
-        const material = new THREE.MeshBasicMaterial()
-        material.map = loadedTexture.First.day
-        child.material = material
+      // if (child.name.includes("First")) {
+      //   const material = new THREE.MeshBasicMaterial()
+      //   material.map = loadedTexture.First.day
+      //   child.material = material
 
-      }
-      if (child.name.includes("Second")) {
-        const material = new THREE.MeshBasicMaterial()
-        material.map = loadedTexture.Second.day
-        child.material = material
-      }
-      if (child.name.includes("Third")) {
-        const material = new THREE.MeshBasicMaterial()
-        material.map = loadedTexture.Third.day
-        child.material = material
-      }
-      if (child.material.map) {
-        child.material.map.minFilter = THREE.LinearFilter;
-      }
+      // }
+      // if (child.name.includes("Second")) {
+      //   const material = new THREE.MeshBasicMaterial()
+      //   material.map = loadedTexture.Second.day
+      //   child.material = material
+      // }
+      // if (child.name.includes("Third")) {
+      //   const material = new THREE.MeshBasicMaterial()
+      //   material.map = loadedTexture.Third.day
+      //   child.material = material
+      // }
+      // if (child.material.map) {
+      //   child.material.map.minFilter = THREE.LinearFilter;
+      // }
       // setting up layers 
+      const material = new THREE.MeshStandardMaterial();
+      child.material = material
+      
       if (child.name.includes("Raycaster")) {
         raycastObjects.push(child);
       }
@@ -401,6 +404,17 @@ loader.load("/models/Room_V1-Compresed.glb", (gltf) => {
     }
   })
   scene.add(gltf.scene)
+//add ambient light with light blue tint
+const ambientLight = new THREE.AmbientLight(0xb3d9ff, 0.4);
+scene.add(ambientLight);
+
+//add directional light
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+directionalLight.position.set(5, 10, 5);
+directionalLight.castShadow = true;
+scene.add(directionalLight);
+
+
 
   // Log which interactive objects were found
   logInteractiveObjectsStatus();
@@ -661,9 +675,9 @@ function OnHover(object, isHovering) {
 
   if (isHovering) {
     gsap.to(object.scale, {
-      x: object.userData.initialScale.x + object.userData.initialScale.x * 0.1,
-      y: object.userData.initialScale.y + object.userData.initialScale.y * 0.1,
-      z: object.userData.initialScale.z + object.userData.initialScale.z * 0.1,
+      x: object.userData.initialScale.x + object.userData.initialScale.x * 0.2,
+      y: object.userData.initialScale.y + object.userData.initialScale.y * 0.2,
+      z: object.userData.initialScale.z + object.userData.initialScale.z * 0.2,
       duration: 0.1,
       ease: 'power2.inOut',
     })
