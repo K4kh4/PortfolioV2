@@ -6,6 +6,7 @@ import './style.scss'
 
 import gsap from 'gsap';
 
+let ModalOpen = false;
 //notebook
 let notebookObject;
 
@@ -83,6 +84,7 @@ document.querySelectorAll('.modal-exit-button').forEach(button => {
 })
 
 const showModal = (modal) => {
+  ModalOpen = true;
   modal.style.display = 'block';
   gsap.set(modal, {
     opacity: 0,
@@ -99,6 +101,7 @@ const hideModal = (modal) => {
     onComplete: () => {
       modal.style.display = 'none';
       CloseNoteBook(notebookObject);
+      ModalOpen = false;
     }
   })
 }
@@ -328,7 +331,9 @@ window.addEventListener("click", OnClick);
 // update loop
 const Update = () => {
 
-
+  if (ModalOpen) {
+    return;
+  }
   controls.update();
   renderer.render(scene, camera);
   raycaster.setFromCamera(pointer, camera);

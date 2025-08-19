@@ -6,64 +6,757 @@
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NatYeah</title>
+  <style>
+    /* Modal Base Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.9);
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal-exit-button {
+      position: absolute;
+      top: 30px;
+      right: 30px;
+      width: 40px;
+      height: 40px;
+      background: none;
+      border: 2px solid #ffffff;
+      color: #ffffff;
+      font-size: 20px;
+      cursor: pointer;
+      z-index: 1001;
+      transition: all 0.3s ease;
+    }
+
+    .modal-exit-button:hover {
+      background-color: #ffffff;
+      color: #1a1a1a;
+    }
+
+    /* Work Modal Styles */
+    .work-modal-container {
+      display: flex;
+      width: 100%;
+      height: 100%;
+      font-family: 'Arial', sans-serif;
+      color: #ffffff;
+    }
+
+    /* Left column - Logo and Navigation */
+    .logo-column {
+      flex: 0 0 300px;
+      padding: 60px 40px;
+      background-color: #1a1a1a;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .brand-name {
+      font-size: 3rem;
+      font-weight: bold;
+      line-height: 0.9;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: -2px;
+    }
+
+    .tagline {
+      font-size: 0.9rem;
+      color: #cccccc;
+      font-weight: normal;
+      line-height: 1.3;
+    }
+
+    .navigation {
+      display: flex;
+      gap: 15px;
+      margin-top: auto;
+    }
+
+    .nav-arrow {
+      width: 40px;
+      height: 40px;
+      background: none;
+      border: 2px solid #ffffff;
+      color: #ffffff;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .nav-arrow:hover {
+      background-color: #ffffff;
+      color: #1a1a1a;
+    }
+
+    .nav-arrow:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Middle column - Text Content */
+    .text-column {
+      flex: 1;
+      padding: 60px 60px;
+      background-color: #1a1a1a;
+      overflow-y: auto;
+    }
+
+    .project-title {
+      font-size: 2.8rem;
+      font-weight: bold;
+      margin-bottom: 40px;
+      color: #ffffff;
+      line-height: 1.1;
+    }
+
+    .project-description {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: #cccccc;
+      margin-bottom: 35px;
+    }
+
+    .credits {
+      margin-bottom: 40px;
+    }
+
+    .credit-item {
+      font-size: 1rem;
+      color: #cccccc;
+      margin-bottom: 10px;
+    }
+
+    .awards {
+      margin-bottom: 40px;
+    }
+
+    .awards h3 {
+      font-size: 1.1rem;
+      color: #ffffff;
+      margin-bottom: 15px;
+      font-weight: bold;
+    }
+
+    .award-item {
+      font-size: 1rem;
+      color: #cccccc;
+      margin-bottom: 10px;
+      line-height: 1.4;
+    }
+
+    /* Right column - Scrollable Media */
+    .media-column {
+      flex: 1;
+      background-color: #0f0f0f;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .media-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .media-item {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+
+    .media-item:hover {
+      transform: scale(1.02);
+    }
+
+    .media-item img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .media-item iframe {
+      width: 100%;
+      height: 315px;
+      display: block;
+      border: none;
+      border-radius: 8px;
+    }
+
+    /* Custom scrollbars */
+    .media-column::-webkit-scrollbar,
+    .text-column::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .media-column::-webkit-scrollbar-track,
+    .text-column::-webkit-scrollbar-track {
+      background: #1a1a1a;
+    }
+
+    .media-column::-webkit-scrollbar-thumb,
+    .text-column::-webkit-scrollbar-thumb {
+      background: #666;
+      border-radius: 4px;
+    }
+
+    .media-column::-webkit-scrollbar-thumb:hover,
+    .text-column::-webkit-scrollbar-thumb:hover {
+      background: #888;
+    }
+
+    /* About and Contact Modal Styles */
+    .about, .contact {
+      padding: 60px;
+      background-color: #1a1a1a;
+      color: #ffffff;
+      font-family: 'Arial', sans-serif;
+    }
+
+    .modal-title {
+      font-size: 3rem;
+      font-weight: bold;
+      margin-bottom: 30px;
+      text-transform: uppercase;
+    }
+
+    .about h2, .contact h2 {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: #ffffff;
+    }
+
+    .about p, .contact p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: #cccccc;
+      margin-bottom: 20px;
+    }
+
+    /* Demo buttons for testing */
+    .demo-buttons {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 500;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .demo-button {
+      padding: 10px 15px;
+      background-color: #333;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .demo-button:hover {
+      background-color: #555;
+    }
+
+    /* Responsive design */
+    @media (max-width: 1200px) {
+      .logo-column {
+        flex: 0 0 250px;
+        padding: 40px 30px;
+      }
+      
+      .brand-name {
+        font-size: 2.5rem;
+      }
+      
+      .text-column {
+        padding: 40px 40px;
+      }
+      
+      .project-title {
+        font-size: 2.2rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .work-modal-container {
+        flex-direction: column;
+      }
+      
+      .logo-column {
+        flex: none;
+        padding: 30px 20px;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        height: auto;
+      }
+      
+      .brand-name {
+        font-size: 1.8rem;
+      }
+      
+      .tagline {
+        font-size: 0.8rem;
+      }
+      
+      .navigation {
+        margin-top: 0;
+      }
+      
+      .text-column {
+        padding: 30px 20px;
+        height: auto;
+        max-height: 300px;
+      }
+      
+      .project-title {
+        font-size: 1.8rem;
+      }
+      
+      .media-column {
+        height: 300px;
+        padding: 15px;
+      }
+      
+      .media-item iframe {
+        height: 200px;
+      }
+    }
+  </style>
 </head>
 
 <body>
   <div id="app"></div>
+
+  <!-- Demo buttons for testing
+  <div class="demo-buttons">
+    <button class="demo-button" onclick="openModal('work1')">Work 1</button>
+    <button class="demo-button" onclick="openModal('work2')">Work 2</button>
+    <button class="demo-button" onclick="openModal('work3')">Work 3</button>
+    <button class="demo-button" onclick="openModal('work4')">Work 4</button>
+    <button class="demo-button" onclick="openModal('work5')">Work 5</button>
+    <button class="demo-button" onclick="openModal('about')">About</button>
+    <button class="demo-button" onclick="openModal('contact')">Contact</button>
+  </div> -->
+
+  <!-- Work 1 Modal - Lidl Pfand ID -->
   <div class="work1 modal">
-    <h1>My Work</h1>
-    <h2>This is my work</h2>
-    <p>This is my work</p>
-    <p>This is my work</p>
-    <button class="modal-exit-button">X</button>
+    <button class="modal-exit-button" onclick="closeModal()">×</button>
+    <div class="work-modal-container">
+      <div class="logo-column">
+        <div class="header">
+          <h1 class="brand-name">CHRIS<br>TSIRIGOTIS</h1>
+          <p class="tagline">That Copywriter Who Doesn't Let Ideas Slip Away</p>
+        </div>
+        <div class="navigation">
+          <button class="nav-arrow" onclick="navigateWork('prev')">←</button>
+          <button class="nav-arrow" onclick="navigateWork('next')">→</button>
+        </div>
+      </div>
+
+      <div class="text-column">
+        <h2 class="project-title">Lidl<br>Pfand ID</h2>
+        
+        <p class="project-description">
+          A great portion of homeless in Germany rely on collecting refundable bottles to survive. But their work goes unnoticed. Pfand ID turns bottle collection into a verified work record, helping collectors access jobs, training, and dignity through a system they already use.
+        </p>
+
+        <p class="project-description">
+          Launched with LIDL and social partners, the campaign doubles bottle refunds for registered collectors and prints real-time "resumes" at Pfand machines. It reframes recycling as labor, making their invisible work visible, bottle by bottle.
+        </p>
+
+        <div class="credits">
+          <div class="credit-item">Art Director: Oguzcan Bozkurt</div>
+          <div class="credit-item">Art Director: Kunal Khade</div>
+          <div class="credit-item">Copywriter: Chris Tsirigotis</div>
+          <div class="credit-item">Copywriter: Francisco Blamey</div>
+        </div>
+
+        <div class="awards">
+          <h3>Awards:</h3>
+          <div class="award-item">Gold - Clios Health 2025 - Creative Use of Data</div>
+          <div class="award-item">Bronze - Clios Health 2025 - Experience / Activation</div>
+        </div>
+      </div>
+
+      <div class="media-column">
+        <div class="media-grid">
+          <div class="media-item">
+            <img src="/works/Work1_P1.jpeg" alt="Pfand ID bottles display">
+          </div>
+          <div class="media-item">
+            <img src="/works/Work1_P1.jpg" alt="Campaign poster">
+          </div>
+          <div class="media-item">
+            <img src="/works/Work1_P1.jpg" alt="Pfand machine interface">
+          </div>
+          <div class="media-item">
+            <img src="/works/Work1_P1.jpg" alt="Campaign materials">
+          </div>
+          <div class="media-item">
+            <img src="/works/Work1_P1s.jpg" alt="Street implementation">
+          </div>
+          <div class="media-item">
+            <!-- Replace the src URL with your actual YouTube video URL -->
+            <iframe src="https://www.youtube.com/embed/H3dpCiqRj0k?si=fBG0Y-0qoxHsEwH3" title="Lidl Pfand ID Campaign Video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <!-- Work 2 Modal - Project Alpha -->
   <div class="work2 modal">
-    <h1>My Work</h1>
-    <h2>This is my2 work</h2>
-    <p>This is my 2work</p>
-    <p>This is my2 work</p>
-    <button class="modal-exit-button">X</button>
+    <button class="modal-exit-button" onclick="closeModal()">×</button>
+    <div class="work-modal-container">
+      <div class="logo-column">
+        <div class="header">
+          <h1 class="brand-name">CHRIS<br>TSIRIGOTIS</h1>
+          <p class="tagline">That Copywriter Who Doesn't Let Ideas Slip Away</p>
+        </div>
+        <div class="navigation">
+          <button class="nav-arrow" onclick="navigateWork('prev')">←</button>
+          <button class="nav-arrow" onclick="navigateWork('next')">→</button>
+        </div>
+      </div>
+
+      <div class="text-column">
+        <h2 class="project-title">Project<br>Alpha</h2>
+        
+        <p class="project-description">
+          This is the description for Project Alpha. A revolutionary approach to digital transformation that bridges the gap between traditional methodologies and cutting-edge innovation.
+        </p>
+
+        <p class="project-description">
+          The project involved comprehensive user research, strategic planning, and innovative implementation across multiple touchpoints to create a seamless user experience.
+        </p>
+
+        <div class="credits">
+          <div class="credit-item">Creative Director: Jane Smith</div>
+          <div class="credit-item">Art Director: Mike Johnson</div>
+          <div class="credit-item">Copywriter: Chris Tsirigotis</div>
+          <div class="credit-item">Developer: Sarah Williams</div>
+        </div>
+
+        <div class="awards">
+          <h3>Awards:</h3>
+          <div class="award-item">Silver - Design Awards 2024 - Innovation</div>
+          <div class="award-item">Bronze - Creative Excellence 2024 - Digital Campaign</div>
+        </div>
+      </div>
+
+      <div class="media-column">
+        <div class="media-grid">
+          <div class="media-item">
+            <img src="/works/Work2_P1.jpg" alt="Project Alpha hero image">
+          </div>
+          <div class="media-item">
+            <img src="/works/Work2_P1.jpg" alt="User interface design">
+          </div>
+          <div class="media-item">
+            <img src="/works/Work2_P1.jpg" alt="Brand materials">
+          </div>
+          <div class="media-item">
+            <img src="/works/Work2_P1.jpg" alt="Campaign launch">
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <!-- Work 3 Modal - Digital Innovation -->
   <div class="work3 modal">
-    <h1>My Work</h1>
-    <h2>This is my3 work</h2>
-    <p>This is my 3 work</p>
-    <p>This is my 3 work</p>
-    <button class="modal-exit-button">X</button>
+    <button class="modal-exit-button" onclick="closeModal()">×</button>
+    <div class="work-modal-container">
+      <div class="logo-column">
+        <div class="header">
+          <h1 class="brand-name">CHRIS<br>TSIRIGOTIS</h1>
+          <p class="tagline">That Copywriter Who Doesn't Let Ideas Slip Away</p>
+        </div>
+        <div class="navigation">
+          <button class="nav-arrow" onclick="navigateWork('prev')">←</button>
+          <button class="nav-arrow" onclick="navigateWork('next')">→</button>
+        </div>
+      </div>
+
+      <div class="text-column">
+        <h2 class="project-title">Digital<br>Innovation</h2>
+        
+        <p class="project-description">
+          A comprehensive digital transformation initiative that reimagines how brands connect with their audiences in the post-digital era. This project explores new frontiers in interactive storytelling.
+        </p>
+
+        <p class="project-description">
+          Through innovative use of emerging technologies and human-centered design, we created an experience that fundamentally changes how users interact with brand narratives.
+        </p>
+
+        <div class="credits">
+          <div class="credit-item">Strategy Lead: Alex Thompson</div>
+          <div class="credit-item">Creative Director: Emily Chen</div>
+          <div class="credit-item">Copywriter: Chris Tsirigotis</div>
+          <div class="credit-item">Tech Lead: David Rodriguez</div>
+        </div>
+
+        <div class="awards">
+          <h3>Awards:</h3>
+          <div class="award-item">Gold - Digital Excellence 2024 - Innovation</div>
+          <div class="award-item">Silver - Tech Awards 2024 - User Experience</div>
+        </div>
+      </div>
+
+      <div class="media-column">
+        <div class="media-grid">
+          <div class="media-item">
+            <img src="/works/Work3_P1.jpg" alt="Digital innovation concept">
+          </div>
+          <div class="media-item">
+            <img src="/works/Work3_P1.jpg" alt="Interactive demo">
+          </div>
+          <div class="media-item">
+            <img src="/works/Work3_P1.jpg" alt="Technology implementation">
+          </div>
+          <div class="media-item">
+            <img src="/works/Work3_P1.jpg" alt="User journey mapping">
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <!-- Work 4 Modal - Brand Activation -->
   <div class="work4 modal">
-    <h1>My Work</h1>
-    <h2>This is my4 work</h2>
-    <p>This is my 4 work</p>
-    <p>This is my 4 work</p>
-    <button class="modal-exit-button">X</button>
+    <button class="modal-exit-button" onclick="closeModal()">×</button>
+    <div class="work-modal-container">
+      <div class="logo-column">
+        <div class="header">
+          <h1 class="brand-name">CHRIS<br>TSIRIGOTIS</h1>
+          <p class="tagline">That Copywriter Who Doesn't Let Ideas Slip Away</p>
+        </div>
+        <div class="navigation">
+          <button class="nav-arrow" onclick="navigateWork('prev')">←</button>
+          <button class="nav-arrow" onclick="navigateWork('next')">→</button>
+        </div>
+      </div>
+
+      <div class="text-column">
+        <h2 class="project-title">Brand<br>Activation</h2>
+        
+        <p class="project-description">
+          A multi-channel brand activation campaign that brought together physical and digital experiences to create meaningful connections between consumers and brand values.
+        </p>
+
+        <p class="project-description">
+          The campaign leveraged experiential marketing, social media amplification, and data-driven insights to create authentic brand moments that resonated across diverse audience segments.
+        </p>
+
+        <div class="credits">
+          <div class="credit-item">Brand Strategist: Maria Garcia</div>
+          <div class="credit-item">Experience Designer: Tom Wilson</div>
+          <div class="credit-item">Copywriter: Chris Tsirigotis</div>
+          <div class="credit-item">Event Producer: Lisa Park</div>
+        </div>
+
+        <div class="awards">
+          <h3>Awards:</h3>
+          <div class="award-item">Gold - Experiential Marketing 2024 - Best Activation</div>
+          <div class="award-item">Silver - Brand Experience 2024 - Multi-Channel Campaign</div>
+        </div>
+      </div>
+
+      <div class="media-column">
+        <div class="media-grid">
+          <div class="media-item">
+            <img src="/works/Work4_P1.jpg" alt="Brand activation event">
+          </div>
+          <div class="media-item">
+            <img src="/works/Work4_P1.jpg" alt="Experiential setup">
+          </div>
+          <div class="media-item">
+            <img src="/works/Work4_P1.jpg" alt="Social media amplification">
+          </div>
+          <div class="media-item">
+            <img src="/works/Work4_P1.jpg" alt="Consumer engagement">
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <!-- Work 5 Modal - Creative Campaign -->
   <div class="work5 modal">
-    <h1>My Work</h1>
-    <h2>This is my5 work</h2>
-    <p>This is my 5 work</p>
-    <p>This is my 5 work</p>
-    <button class="modal-exit-button">X</button>
+    <button class="modal-exit-button" onclick="closeModal()">×</button>
+    <div class="work-modal-container">
+      <div class="logo-column">
+        <div class="header">
+          <h1 class="brand-name">CHRIS<br>TSIRIGOTIS</h1>
+          <p class="tagline">That Copywriter Who Doesn't Let Ideas Slip Away</p>
+        </div>
+        <div class="navigation">
+          <button class="nav-arrow" onclick="navigateWork('prev')">←</button>
+          <button class="nav-arrow" onclick="navigateWork('next')">→</button>
+        </div>
+      </div>
+
+      <div class="text-column">
+        <h2 class="project-title">Creative<br>Campaign</h2>
+        
+        <p class="project-description">
+          An integrated creative campaign that challenged conventional thinking and pushed boundaries in advertising. The project focused on authentic storytelling and emotional connection.
+        </p>
+
+        <p class="project-description">
+          Through bold creative choices and strategic messaging, the campaign achieved unprecedented engagement rates and became a case study for innovative advertising approaches.
+        </p>
+
+        <div class="credits">
+          <div class="credit-item">Executive Creative Director: Robert Kim</div>
+          <div class="credit-item">Art Director: Nina Patel</div>
+          <div class="credit-item">Copywriter: Chris Tsirigotis</div>
+          <div class="credit-item">Producer: James Mitchell</div>
+        </div>
+
+        <div class="awards">
+          <h3>Awards:</h3>
+          <div class="award-item">Gold - Advertising Excellence 2024 - Creative Campaign</div>
+          <div class="award-item">Silver - Creative Arts 2024 - Copywriting</div>
+          <div class="award-item">Bronze - Marketing Innovation 2024 - Integrated Campaign</div>
+        </div>
+      </div>
+
+      <div class="media-column">
+        <div class="media-grid">
+          <div class="media-item">
+            <img src="/works/Work5_P1.jpg" alt="Creative campaign overview">
+          </div>
+          <div class="media-item">
+            <img src="/works/Work5_P1.jpg" alt="Key visual design">
+          </div>
+          <div class="media-item">
+            <img src="/works/Work5_P1.jpg" alt="Campaign rollout">
+          </div>
+          <div class="media-item">
+            <img src="/works/Work5_P1.jpg" alt="Campaign results">
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+
+  <!-- About Modal -->
   <div class="about modal">
+    <button class="modal-exit-button" onclick="closeModal()">×</button>
     <h1 class="modal-title">About Me</h1>
-    <h2>This is my about me</h2>
-    <p>This is my about me</p>
-    <p>This is my about me</p>
-    <button class="modal-exit-button">X</button>
+    <h2>Creative Copywriter & Strategist</h2>
+    <p>I'm a copywriter who believes great ideas shouldn't slip away. With over 8 years of experience in advertising and creative strategy, I specialize in crafting compelling narratives that drive meaningful action.</p>
+    <p>My work spans across digital campaigns, brand activations, and social impact projects. I'm passionate about using creativity to solve real-world problems and create positive change.</p>
   </div>
+
+  <!-- Contact Modal -->
   <div class="contact modal">
+    <button class="modal-exit-button" onclick="closeModal()">×</button>
     <h1 class="modal-title">Contact</h1>
-    <h2>This is my contact</h2>
-    <p>This is my contact</p>
-    <p>This is my contact</p>
-    <button class="modal-exit-button">X</button>
+    <h2>Let's Create Something Amazing</h2>
+    <p>Ready to bring your ideas to life? I'm always excited to collaborate on projects that make a difference.</p>
+    <p>Email: chris@example.com<br>
+       LinkedIn: /in/christsirigotis<br>
+       Phone: +49 xxx xxx xxxx</p>
   </div>
 
   <div id="experience">
     <canvas id="experience-canvas" class="experience-canvas"></canvas>
   </div>
+
   <script type="module" src="/src/main.js"></script>
+  
+  <script>
+    // Current work index for navigation
+    let currentWork = 1;
+    const totalWorks = 5;
+
+    // Open modal function
+    function openModal(modalClass) {
+      // Close any open modals first
+      closeModal();
+      
+      // Open the requested modal
+      const modal = document.querySelector('.' + modalClass);
+      if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Prevent body scroll
+        
+        // Update current work index if it's a work modal
+        if (modalClass.startsWith('work')) {
+          currentWork = parseInt(modalClass.replace('work', ''));
+        }
+      }
+    }
+
+    // Close modal function
+    function closeModal() {
+      const activeModal = document.querySelector('.modal.active');
+      if (activeModal) {
+        activeModal.classList.remove('active');
+        document.body.style.overflow = 'auto'; // Restore body scroll
+      }
+    }
+
+    // Navigate between works
+    function navigateWork(direction) {
+      let newWork;
+      
+      if (direction === 'next') {
+        newWork = currentWork < totalWorks ? currentWork + 1 : 1;
+      } else {
+        newWork = currentWork > 1 ? currentWork - 1 : totalWorks;
+      }
+      
+      // Close current modal and open new one
+      closeModal();
+      setTimeout(() => {
+        openModal('work' + newWork);
+      }, 100);
+    }
+
+    // Close modal when clicking outside content
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('modal') && e.target.classList.contains('active')) {
+        closeModal();
+      }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+    });
+
+    // Prevent clicks inside modal content from closing modal
+    document.addEventListener('click', function(e) {
+      if (e.target.closest('.work-modal-container, .about h1, .about h2, .about p, .contact h1, .contact h2, .contact p')) {
+        e.stopPropagation();
+      }
+    });
+  </script>
 </body>
 
 </html>
