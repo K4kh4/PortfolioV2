@@ -4,6 +4,46 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import './style.scss'
 
+import gsap from 'gsap';
+
+//notebook
+
+
+//modals
+const Modals = {
+  work: document.querySelector('.modal.work'),
+  about: document.querySelector('.modal.about'),
+  contact: document.querySelector('.modal.contact')
+}
+
+document.querySelectorAll('.modal-exit-button').forEach(button => {
+  button.addEventListener('click', () => {
+    hideModal(button.parentElement);
+  })
+})
+
+const showModal = (modal) => {
+  modal.style.display = 'block';
+  gsap.set(modal, {
+    opacity: 0,
+  })
+  gsap.to(modal, {
+    opacity: 1,
+    duration: 0.5,
+  })
+}
+const hideModal = (modal) => {
+  gsap.to(modal, {
+    opacity: 0,
+    duration: 0.5,
+    onComplete: () => {
+      modal.style.display = 'none';
+      CloseNoteBook(notebookObject);
+    }
+  })
+}
+
+//
 
 const canvas = document.querySelector('#experience-canvas')
 const sizes = {
@@ -54,8 +94,10 @@ Object.entries(textureMap).forEach(([key, value]) => {
   // loadedTexture[key].night = nightTexture;
 });
 
-
-
+// racating
+const raycastObjects = [];
+let currentIntersect = [];
+let notebookObject;
 //model loader
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath('/draco/');
@@ -65,6 +107,7 @@ loader.setDRACOLoader(dracoLoader);
 loader.load("/models/Room_V1-Compresed.glb", (gltf) => {
   gltf.scene.traverse((child) => {
     if (child.isMesh) {
+      //setting up textures
       if (child.name.includes("First")) {
         const material = new THREE.MeshBasicMaterial()
         material.map = loadedTexture.First.day
@@ -84,6 +127,13 @@ loader.load("/models/Room_V1-Compresed.glb", (gltf) => {
       if (child.material.map) {
         child.material.map.minFilter = THREE.LinearFilter;
       }
+      // setting up layers 
+      if (child.name.includes("Raycaster")) {
+        raycastObjects.push(child);
+      }
+      if (child.name.includes("Third_notebook_MyWork_Top_Raycaster_Pointer")) {
+        notebookObject = child;
+      }
     }
   })
   scene.add(gltf.scene)
@@ -100,8 +150,10 @@ const renderer = new THREE.WebGLRenderer({
 });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-
+// average position for notebook
+const cameraNotebookPosition = new THREE.Vector3(1.0116149200302174, 6.571313242426443, -0.8049478528131928);
+const targetNotebookPosition = new THREE.Vector3(-1.0674379059115109, 4.033968206624388, -0.790316383561921);
+//set start position
 camera.position.set(5, 5.5, -11.7)
 const controls = new OrbitControls(camera, canvas)
 controls.enableDamping = true
@@ -125,48 +177,104 @@ function OnMouseMove(event) {
   pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
 }
 
+function OnClick() {
+  if (currentIntersect.length > 0) {
+    const currentIntersectObject = currentIntersect[0].object;
+    if (currentIntersectObject.name.includes("Pointer")) {
+      if (currentIntersectObject.name.includes("Button_MyWork")) {
+        OpenNoteBook(notebookObject);
+      }
+    }
+  }
+}
+
 //event listeners
 window.addEventListener("mousemove", (e) => { OnMouseMove(e); })
 window.addEventListener("resize", OnResize);
-
+window.addEventListener("click", OnClick);
 // update loop
 const Update = () => {
+
+
   controls.update();
   renderer.render(scene, camera);
   raycaster.setFromCamera(pointer, camera);
-  const intersects = raycaster.intersectObjects(scene.children);
-  for (let i = 0; i < intersects.length; i++) {
-    if (intersects[i].object.name === "Book") {
-      PopObject(intersects[i].object);
+  currentIntersect = raycaster.intersectObjects(raycastObjects);
+
+  for (let i = 0; i < currentIntersect.length; i++) {
+    if (currentIntersect[i].object.name.includes("Hover")) {
+      PopObject(currentIntersect[i].object);
     }
-    if (intersects[i].object.name === "Drawer_Left") {
-      intersects[i].object.translateZ(-.5);
-    }
-  }
-  if (intersects.length > 0) {
-    // need to add ayerrs ike clickable, hoverable, animated, 
-    document.body.style.cursor = "pointer";
-  }
-  else {
-    document.body.style.cursor = "default";
+
   }
 
+
+  if (currentIntersect.length > 0) {
+    // need to add ayerrs ike clickable, hoverable, animated, 
+    const currentIntersectObject = currentIntersect[0].object;
+    if (currentIntersectObject.name.includes("Pointer")) {
+      document.body.style.cursor = "pointer";
+
+    }
+    else {
+      document.body.style.cursor = "default";
+    }
+
+  }
+  else {
+    
+    document.body.style.cursor = "default";
+  }
 
   window.requestAnimationFrame(Update);
 }
 
 //functions
 function PopObject(object) {
-  console.log(object.name);
-  object.scale.x = 2;
-  object.scale.y = 2;
-  object.scale.z = 2;
+  gsap.to(object.scale, {
+    x: 1.1,
+    y: 1.1,
+    z: 1.1,
+    duration: 0.1,
+    ease: 'power2.inOut'
+  })
+ 
+}
 
-  setTimeout(() => {
-    object.scale.x = 1;
-    object.scale.y = 1;
-    object.scale.z = 1;
-  }, 1000);
+function OpenNoteBook(object) {
+  gsap.to(object.rotation, {
+    x: Math.PI,
+    y: 0,
+    z: 0,
+    duration: 0.5,
+    ease: 'power2.inOut'
+  })
+  zoomCameraTo(object);
+}
+function CloseNoteBook(object) {
+  gsap.to(object.rotation, {
+    x: 0,
+    y: 0,
+    z: 0,
+    duration: 0.5,
+    ease: 'power2.inOut'
+  })
+}
+function zoomCameraTo() {
+  gsap.to(camera.position, {
+    x: cameraNotebookPosition.x,
+    y: cameraNotebookPosition.y,
+    z: cameraNotebookPosition.z,
+    duration: 0.5,
+    ease: 'power2.inOut'
+  })
+  gsap.to(controls.target, {
+    x: targetNotebookPosition.x,
+    y: targetNotebookPosition.y,
+    z: targetNotebookPosition.z,
+    duration: 0.5,
+    ease: 'power2.inOut'
+  })
 }
 //start update loop
 Update();
