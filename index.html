@@ -223,27 +223,78 @@
     }
 
     /* About and Contact Modal Styles */
-    .about, .contact {
+    .about {
+      padding: 0;
+      background-color: #ACB9FF;
+      color: #000000;
+      font-family: 'Arial', sans-serif;
+      display: flex;
+      align-items: flex-end;
+      justify-content: flex-start;
+      background-image: url('/works/about_me_Small_nobck.png');
+      background-repeat: no-repeat;
+      background-position: center bottom;
+      background-size: auto 70%;
+    }
+
+    .contact {
       padding: 60px;
       background-color: #1a1a1a;
       color: #ffffff;
       font-family: 'Arial', sans-serif;
     }
 
-    .modal-title {
+    .about-content {
+      transform: translateY(20%);
+      width: 50%;
+      max-width: 600px;
+      padding: 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      z-index: 1;
+      text-align: left;
+      background: transparent;
+      margin-left: 5%;
+      margin-bottom: 5%;
+    }
+
+    .about .modal-title {
       font-size: 3rem;
       font-weight: bold;
       margin-bottom: 30px;
       text-transform: uppercase;
+      color: #000000;
     }
 
-    .about h2, .contact h2 {
+    .about h2 {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: #000000;
+    }
+
+    .about p {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: #333333;
+      margin-bottom: 10px;
+    }
+
+    .contact .modal-title {
+      font-size: 3rem;
+      font-weight: bold;
+      margin-bottom: 30px;
+      text-transform: uppercase;
+      color: #ffffff;
+    }
+
+    .contact h2 {
       font-size: 1.5rem;
       margin-bottom: 20px;
       color: #ffffff;
     }
 
-    .about p, .contact p {
+    .contact p {
       font-size: 1.1rem;
       line-height: 1.6;
       color: #cccccc;
@@ -391,23 +442,22 @@
       <div class="media-column">
         <div class="media-grid">
           <div class="media-item">
-            <img src="/works/Work1_P1.jpeg" alt="Pfand ID bottles display">
+            <img src="/works/Work1_P1.png" alt="Text">
           </div>
           <div class="media-item">
-            <img src="/works/Work1_P1.jpeg" alt="Campaign poster">
+            <img src="/works/Work1_P2.png" alt="Text">
           </div>
           <div class="media-item">
-            <img src="/works/Work1_P1.jpeg" alt="Pfand machine interface">
+            <img src="/works/Work1_P3.png" alt="Text">
           </div>
           <div class="media-item">
-            <img src="/works/Work1_P1.jpeg" alt="Campaign materials">
+            <img src="/works/Work1_P4.png" alt="Text">
           </div>
           <div class="media-item">
-            <img src="/works/Work1_P1.jpeg" alt="Street implementation">
+            <img src="/works/Work1_P5.png" alt="Text">  
           </div>
           <div class="media-item">
-            <!-- Replace the src URL with your actual YouTube video URL -->
-            <iframe src="https://www.youtube.com/embed/H3dpCiqRj0k?si=fBG0Y-0qoxHsEwH3" title="Lidl Pfand ID Campaign Video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            <img src="/works/Work1_P6.png" alt="Text">
           </div>
         </div>
       </div>
@@ -425,22 +475,24 @@
         </div>
         
         <div class="project-content">
-          <h2 class="project-title">N26<br>banking you way</h2>
+      
+          <h2 class="project-title"> PLASTIC FISCHER</h2>
+
+          <p class="project-description">
+            This campaign tells the story of an environmental hero pushed to his breaking point. Through a staged viral video, the CEO of Plastic Fischer appears to sabotage his own mission, fed up with public apathy.
+          </p>
+
+          <p class="project-description">
+            This provocative narrative is designed to shatter indifference and drive donations by asking one simple question: what will it take to finally clean the rivers?
+          </p>
           
-          <p class="project-description">
-            N26 is a digital bank that offers a seamless banking experience. It's a bank that you can use to manage your money, pay your bills, and invest your money.
-          </p>
-
-          <p class="project-description">
-            N26 is a digital bank that offers a seamless banking experience. It's a bank that you can use to manage your money, pay your bills, and invest your money.
-          </p>
-
           <div class="credits">
             <div class="credit-item">Copywriter: Natia Kalandia</div>
             <div class="credit-item">Art Director: Anya Zainieva</div>
             <div class="credit-item">Creative Director: luca pristerbach, passcal momper</div>
             <div class="credit-item">Agency: Potvis</div>
           </div>
+
 
         </div>
         
@@ -453,16 +505,10 @@
       <div class="media-column">
         <div class="media-grid">
           <div class="media-item">
-            <img src="/works/Work2_P1.jpg" alt="Project Alpha hero image">
+            <img src="/works/Work2_P1.png" alt="Project Alpha hero image">
           </div>
           <div class="media-item">
-            <img src="/works/Work2_P1.jpg" alt="User interface design">
-          </div>
-          <div class="media-item">
-            <img src="/works/Work2_P1.jpg" alt="Brand materials">
-          </div>
-          <div class="media-item">
-            <img src="/works/Work2_P1.jpg" alt="Campaign launch">
+            <img src="/works/Work2_P2.png" alt="User interface design">
           </div>
         </div>
       </div>
@@ -480,15 +526,14 @@
         </div>
         
         <div class="project-content">
-          <h2 class="project-title">N26<br>banking you way</h2>
+          <h2 class="project-title">NORSE PROJECT</h2>
           
           <p class="project-description">
-            N26 is a digital bank that offers a seamless banking experience. It's a bank that you can use to manage your money, pay your bills, and invest your money.
+            Through shifting seasons and changing skies. From a breezy spring walk to a sudden autumn downpour or the first snow of winter, a Norse Projects hat is your constant companion. Designed for life's moments, no matter the weather.
+
           </p>
 
-          <p class="project-description">
-            N26 is a digital bank that offers a seamless banking experience. It's a bank that you can use to manage your money, pay your bills, and invest your money.
-          </p>
+        
 
           <div class="credits">
             <div class="credit-item">Copywriter: Natia Kalandia</div>
@@ -508,16 +553,22 @@
       <div class="media-column">
         <div class="media-grid">
           <div class="media-item">
-            <img src="/works/Work3_P1.jpg" alt="Digital innovation concept">
+            <img src="/works/Work3_P1.png" alt="Digital innovation concept">
           </div>
           <div class="media-item">
-            <img src="/works/Work3_P1.jpg" alt="Interactive demo">
+            <img src="/works/Work3_P2.png" alt="Interactive demo">
           </div>
           <div class="media-item">
-            <img src="/works/Work3_P1.jpg" alt="Technology implementation">
+            <img src="/works/Work3_P3.png" alt="Technology implementation">
           </div>
           <div class="media-item">
-            <img src="/works/Work3_P1.jpg" alt="User journey mapping">
+            <img src="/works/Work3_P4.png" alt="User journey mapping">
+          </div>
+          <div class="media-item">
+            <img src="/works/Work3_P5.png" alt="User journey mapping">
+          </div>
+          <div class="media-item">
+            <img src="/works/Work3_P6.png" alt="User journey mapping">
           </div>
         </div>
       </div>
@@ -535,21 +586,17 @@
         </div>
         
         <div class="project-content">
-          <h2 class="project-title">Brand<br>Activation</h2>
+          <h2 class="project-title">DR. Martens<br>It's just gonna hurt a little</h2>
           
           <p class="project-description">
-            N26 is a digital bank that offers a seamless banking experience. It's a bank that you can use to manage your money, pay your bills, and invest your money.
+            Dr. Martens 1460 is one of the iconic shoes there is. It comes with instant recognition and style approval as well. That’s why it’s worn equally successfully by almost every demographic representative. You either own one or want to own one. But what I’m gonna say next is gonna hurt a little.
           </p>
 
-          <p class="project-description">
-            N26 is a digital bank that offers a seamless banking experience. It's a bank that you can use to manage your money, pay your bills, and invest your money.
-          </p>
+        
 
           <div class="credits">
             <div class="credit-item">Copywriter: Natia Kalandia</div>
-            <div class="credit-item">Art Director: Anya Zainieva</div>
-            <div class="credit-item">Creative Director: luca pristerbach, passcal momper</div>
-            <div class="credit-item">Agency: Potvis</div>
+         
           </div>
 
         </div>
@@ -563,16 +610,16 @@
       <div class="media-column">
         <div class="media-grid">
           <div class="media-item">
-            <img src="/works/Work4_P1.jpg" alt="Brand activation event">
+            <img src="/works/Work4_P1.png" alt="Brand activation event">
           </div>
           <div class="media-item">
-            <img src="/works/Work4_P1.jpg" alt="Experiential setup">
+            <img src="/works/Work4_P2.png" alt="Experiential setup">
           </div>
           <div class="media-item">
-            <img src="/works/Work4_P1.jpg" alt="Social media amplification">
+            <img src="/works/Work4_P3.png" alt="Social media amplification">
           </div>
           <div class="media-item">
-            <img src="/works/Work4_P1.jpg" alt="Consumer engagement">
+            <img src="/works/Work4_P4.png" alt="Consumer engagement">
           </div>
         </div>
       </div>
@@ -590,21 +637,14 @@
         </div>
         
         <div class="project-content">
-          <h2 class="project-title">N26<br>banking you way</h2>
+          <h2 class="project-title">IKEA<br>Beyond trends</h2>
           
           <p class="project-description">
-            N26 is a digital bank that offers a seamless banking experience. It's a bank that you can use to manage your money, pay your bills, and invest your money.
-          </p>
+            Great design transcends trends. To prove the enduring versatility of IKEA's most beloved products, our "Beyond Trends" project used Midjourney to filter them through history's greatest art styles. This visual experiment confirms that IKEA's design doesn't just cater to one aesthetic—it can embody them all.          </p>
 
-          <p class="project-description">
-            N26 is a digital bank that offers a seamless banking experience. It's a bank that you can use to manage your money, pay your bills, and invest your money.
-          </p>
 
           <div class="credits">
             <div class="credit-item">Copywriter: Natia Kalandia</div>
-            <div class="credit-item">Art Director: Anya Zainieva</div>
-            <div class="credit-item">Creative Director: luca pristerbach, passcal momper</div>
-            <div class="credit-item">Agency: Potvis</div>
           </div>
 
         </div>
@@ -637,10 +677,16 @@
   <!-- About Modal -->
   <div class="about modal">
     <button class="modal-exit-button">×</button>
-    <h1 class="modal-title">About Me</h1>
-    <h2>Creative Copywriter & Strategist</h2>
-    <p>I'm a copywriter who believes great ideas shouldn't slip away. With over 8 years of experience in advertising and creative strategy, I specialize in crafting compelling narratives that drive meaningful action.</p>
-    <p>My work spans across digital campaigns, brand activations, and social impact projects. I'm passionate about using creativity to solve real-world problems and create positive change.</p>
+    <div class="about-content">
+      <h1 class="modal-title">Hey there!</h1>
+      <h2>I’m Natia. </h2>
+      <p>Growing up, I was always told that I had a perfect speech pattern for public speaking and I should have kept it in mind for my future career. </p>
+      <p>I choose copywriting instead and ever since my mom is trying to figure out what is it,  that I actually do.</p>
+      <p>It takes approximately 7 minutes to figure out that I’m an only child and for some people - even less, that I’m a March Piscies. So far I can’t figure out what’s my tell. </p>
+      <p>Despite the fact that I’ve been rocking Resting B face ever since preschool, I know for a fact that I’m a major personality hire, besides my talents :) </p>
+      <p>Speaking of talents, I have a natural born gift telling apart authentic and performative. It’s a blessing and a curse at the same time. </p>
+    <p>I never regret anything in my life, but I’ll always feel bitter that I’ll never write anything remotely as perfect as ‘The Free Churro' episode in Bojack Horsman. </p>
+    </div>
   </div>
 
   <!-- Contact Modal -->

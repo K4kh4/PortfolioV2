@@ -15,7 +15,7 @@ const interactiveObjects = [
   {
     name: "Button_MyWork",
     object: null, // Will be set when loading the model
-    modal: "work",
+    modal: "about",
     action: "openNotebook" // Special action for this button
   },
   {
