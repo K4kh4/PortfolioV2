@@ -66,45 +66,209 @@ const interactiveObjects = [
 //
 
 
-//modals
-const Modals = {
-  work1: document.querySelector('.modal.work1'),
-  work2: document.querySelector('.modal.work2'),
-  work3: document.querySelector('.modal.work3'),
-  work4: document.querySelector('.modal.work4'),
-  work5: document.querySelector('.modal.work5'),
-  about: document.querySelector('.modal.about'),
-  contact: document.querySelector('.modal.contact')
+//modals and navigation
+let currentWork = 1;
+const totalWorks = 5;
+
+// Modal references - initialized after DOM loads
+let Modals = {};
+
+// Unified modal management functions
+const openModal = (modalClass) => {
+  console.log(`openModal called with: ${modalClass}`);
+
+  // Close any open modals first (but don't wait for animation)
+  const currentActiveModal = document.querySelector('.modal.active');
+  if (currentActiveModal && !currentActiveModal.classList.contains(modalClass)) {
+    currentActiveModal.classList.remove('active');
+    currentActiveModal.style.display = 'none';
+  }
+
+  // Open the requested modal
+  const modal = typeof modalClass === 'string' ?
+    document.querySelector('.modal.' + modalClass) : modalClass;
+
+  console.log(`Found modal element:`, modal);
+
+  if (modal) {
+    console.log(`Opening modal with classes: ${modal.className}`);
+
+    // Clear any previous GSAP properties and reset modal state
+    gsap.killTweensOf(modal);
+    gsap.set(modal, { clearProps: "all" });
+    modal.style.opacity = '';
+    modal.style.display = 'block';
+
+    ModalOpen = true;
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Prevent body scroll
+
+    // Update current work index if it's a work modal
+    if (modal.classList.contains('work1')) currentWork = 1;
+    else if (modal.classList.contains('work2')) currentWork = 2;
+    else if (modal.classList.contains('work3')) currentWork = 3;
+    else if (modal.classList.contains('work4')) currentWork = 4;
+    else if (modal.classList.contains('work5')) currentWork = 5;
+
+    // Apply GSAP animation with fresh start
+    gsap.fromTo(modal,
+      { opacity: 0 },
+      { opacity: 1, duration: 0.5, ease: "power2.out" }
+    );
+
+    console.log(`Modal opened successfully: ${modalClass}`);
+  } else {
+    console.error(`Modal not found for class: .modal.${modalClass}`);
+  }
 }
 
-document.querySelectorAll('.modal-exit-button').forEach(button => {
-  button.addEventListener('click', () => {
-    hideModal(button.parentElement);
-  })
-})
+const closeModal = () => {
+  const activeModal = document.querySelector('.modal.active');
+  if (activeModal) {
+    gsap.to(activeModal, {
+      opacity: 0,
+      duration: 0.5,
+      onComplete: () => {
+        activeModal.classList.remove('active');
+        // Clear any GSAP properties that might interfere
+        gsap.set(activeModal, { clearProps: "all" });
+        activeModal.style.display = 'none';
+        activeModal.style.opacity = '';
+        document.body.style.overflow = 'auto'; // Restore body scroll
+
+        // DON'T reset notebook and camera - keep them as they are
+        // Users can continue clicking work buttons without reopening notebook
+
+        // Reset modal state AFTER all animations are complete
+        ModalOpen = false;
+        console.log('Modal closed - notebook and camera remain positioned');
+      }
+    });
+  } else {
+    // If no active modal, just reset the state
+    ModalOpen = false;
+  }
+}
 
 const showModal = (modal) => {
-  ModalOpen = true;
-  modal.style.display = 'block';
-  gsap.set(modal, {
-    opacity: 0,
-  })
-  gsap.to(modal, {
-    opacity: 1,
-    duration: 0.5,
-  })
+  if (typeof modal === 'string') {
+    openModal(modal);
+  } else {
+    openModal(modal.classList[0]); // Get first class name
+  }
 }
+
 const hideModal = (modal) => {
-  gsap.to(modal, {
-    opacity: 0,
-    duration: 0.5,
-    onComplete: () => {
-      modal.style.display = 'none';
-      CloseNoteBook(notebookObject);
-      ModalOpen = false;
-    }
-  })
+  closeModal();
 }
+
+// Navigate between works
+const navigateWork = (direction) => {
+  let newWork;
+
+  if (direction === 'next') {
+    newWork = currentWork < totalWorks ? currentWork + 1 : 1;
+  } else {
+    newWork = currentWork > 1 ? currentWork - 1 : totalWorks;
+  }
+
+  // Close current modal and open new one
+  closeModal();
+  setTimeout(() => {
+    openModal('work' + newWork);
+  }, 100);
+}
+
+// Initialize event listeners when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  // Initialize modal references
+  Modals = {
+    work1: document.querySelector('.modal.work1'),
+    work2: document.querySelector('.modal.work2'),
+    work3: document.querySelector('.modal.work3'),
+    work4: document.querySelector('.modal.work4'),
+    work5: document.querySelector('.modal.work5'),
+    about: document.querySelector('.modal.about'),
+    contact: document.querySelector('.modal.contact')
+  };
+
+  // Modal exit button listeners
+  document.querySelectorAll('.modal-exit-button').forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeModal();
+    });
+  });
+
+  // Navigation button listeners
+  document.querySelectorAll('.nav-arrow').forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const direction = button.textContent.trim() === '←' ? 'prev' : 'next';
+      navigateWork(direction);
+    });
+  });
+
+  // Close modal when clicking outside content
+  document.addEventListener('click', function (e) {
+    if (e.target.classList.contains('modal') && e.target.classList.contains('active')) {
+      closeModal();
+    }
+  });
+
+  // Close modal with Escape key
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') {
+      closeModal();
+    }
+  });
+
+  // Prevent clicks inside modal content from closing modal
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('.work-modal-container, .about h1, .about h2, .about p, .contact h1, .contact h2, .contact p')) {
+      e.stopPropagation();
+    }
+  });
+});
+
+// Make functions globally available for any remaining inline handlers
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.navigateWork = navigateWork;
+
+// Debug function to test modals from console
+window.testModal = (workNumber) => {
+  console.log(`Testing modal work${workNumber}`);
+  openModal(`work${workNumber}`);
+};
+
+// Debug function to check modal states
+window.checkModalStates = () => {
+  console.log('Current modal states:');
+  for (let i = 1; i <= 5; i++) {
+    const modal = document.querySelector(`.modal.work${i}`);
+    if (modal) {
+      console.log(`work${i}:`, {
+        display: modal.style.display,
+        opacity: modal.style.opacity,
+        hasActive: modal.classList.contains('active'),
+        computedDisplay: window.getComputedStyle(modal).display,
+        computedOpacity: window.getComputedStyle(modal).opacity
+      });
+    }
+  }
+};
+
+// Function to manually reset notebook and camera (if needed later)
+window.resetNotebookView = () => {
+  console.log('Resetting notebook and camera to original position');
+  if (notebookObject) {
+    CloseNoteBook(notebookObject);
+  }
+};
+
+// Make resetNotebookView available globally
+window.CloseNoteBook = CloseNoteBook;
 
 //
 
@@ -237,13 +401,16 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 const cameraNotebookPosition = new THREE.Vector3(1.0116149200302174, 6.571313242426443, -0.8049478528131928);
 const targetNotebookPosition = new THREE.Vector3(-1.0674379059115109, 4.033968206624388, -0.790316383561921);
 //set start position
-camera.position.set(5, 5.5, -11.7)
+const originalCameraPosition = new THREE.Vector3(5, 5.5, -11.7);
+const originalTargetPosition = new THREE.Vector3(1.4, 2.1, -1.6);
+
+camera.position.copy(originalCameraPosition);
 const controls = new OrbitControls(camera, canvas)
 controls.enableDamping = true
 controls.enableZoom = true
 controls.enablePan = true
 controls.dampingFactor = 0.5
-controls.target.set(1.4, 2.1, -1.6)
+controls.target.copy(originalTargetPosition);
 
 //event functions
 function OnResize() {
@@ -280,15 +447,28 @@ function OnClick() {
 // Handle different types of object clicks
 function handleObjectClick(interactiveObject) {
   console.log(`Clicked on: ${interactiveObject.name}`);
-  console.log(interactiveObject.modal);
+  console.log(`Modal: ${interactiveObject.modal}`);
+  console.log(`Action: ${interactiveObject.action}`);
+
   switch (interactiveObject.action) {
     case "openNotebook":
       OpenNoteBook(notebookObject);
       break;
 
     case "showModal":
-      if (interactiveObject.modal && Modals[interactiveObject.modal]) {
-        showModal(Modals[interactiveObject.modal]);
+      if (interactiveObject.modal) {
+        // Use direct modal class name instead of cached references
+        console.log(`Attempting to open modal: ${interactiveObject.modal}`);
+        const modalElement = document.querySelector(`.modal.${interactiveObject.modal}`);
+        console.log(`Found modal element:`, modalElement);
+
+        if (modalElement) {
+          openModal(interactiveObject.modal);
+        } else {
+          console.error(`Modal element not found for: ${interactiveObject.modal}`);
+        }
+      } else {
+        console.error('No modal specified for interactive object');
       }
       break;
 
@@ -330,20 +510,22 @@ window.addEventListener("resize", OnResize);
 window.addEventListener("click", OnClick);
 // update loop
 const Update = () => {
+  // Always continue the animation loop
+  window.requestAnimationFrame(Update);
 
   if (ModalOpen) {
+    // Still render the scene but skip interactions when modal is open
+    renderer.render(scene, camera);
     return;
   }
+
   controls.update();
   renderer.render(scene, camera);
   raycaster.setFromCamera(pointer, camera);
   currentIntersect = raycaster.intersectObjects(raycastObjects);
 
-
-
-
   if (currentIntersect.length > 0) {
-    // need to add ayerrs ike clickable, hoverable, animated, 
+    // need to add layers like clickable, hoverable, animated, 
     const currentIntersectObject = currentIntersect[0].object;
     if (currentIntersectObject.name.includes("Hover")) {
       if (currentIntersectObject !== currentHoverObject) {
@@ -356,7 +538,6 @@ const Update = () => {
     }
 
     if (currentIntersectObject.name.includes("Pointer")) {
-
       document.body.style.cursor = "pointer";
     }
     else {
@@ -366,18 +547,14 @@ const Update = () => {
       currentHoverObject = null;
       document.body.style.cursor = "default";
     }
-
   }
   else {
-
     if (currentHoverObject != null) {
       OnHover(currentHoverObject, false);
     }
     currentHoverObject = null;
     document.body.style.cursor = "default";
   }
-
-  window.requestAnimationFrame(Update);
 }
 
 function OpenNoteBook(object) {
@@ -387,20 +564,22 @@ function OpenNoteBook(object) {
     z: 0,
     duration: 0.5,
     ease: 'power2.inOut',
-    onComplete: function () { interactiveObjects.forEach(interactiveObj => {
-      if (interactiveObj.name.includes("WorkButton_")) {
-        gsap.killTweensOf(interactiveObj.object.scale);
-        interactiveObj.object.scale.set(0, 0, 0);
-        interactiveObj.object.show = true;
-        gsap.to(interactiveObj.object.scale, {
-          x: interactiveObj.object.userData.initialScale.x,
-          y: interactiveObj.object.userData.initialScale.y,
-          z: interactiveObj.object.userData.initialScale.z,
-          duration: 0.1,
-          ease: 'power2.inOut',
-        })
-      }
-    }) },
+    onComplete: function () {
+      interactiveObjects.forEach(interactiveObj => {
+        if (interactiveObj.name.includes("WorkButton_")) {
+          gsap.killTweensOf(interactiveObj.object.scale);
+          interactiveObj.object.scale.set(0, 0, 0);
+          interactiveObj.object.show = true;
+          gsap.to(interactiveObj.object.scale, {
+            x: interactiveObj.object.userData.initialScale.x,
+            y: interactiveObj.object.userData.initialScale.y,
+            z: interactiveObj.object.userData.initialScale.z,
+            duration: 0.1,
+            ease: 'power2.inOut',
+          })
+        }
+      })
+    },
   })
   zoomCameraTo(object);
 }
@@ -418,6 +597,26 @@ function CloseNoteBook(object) {
     duration: 0.5,
     ease: 'power2.inOut'
   })
+
+  // Reset camera to original position
+  resetCameraPosition();
+}
+
+function resetCameraPosition() {
+  gsap.to(camera.position, {
+    x: originalCameraPosition.x,
+    y: originalCameraPosition.y,
+    z: originalCameraPosition.z,
+    duration: 0.5,
+    ease: 'power2.inOut'
+  });
+  gsap.to(controls.target, {
+    x: originalTargetPosition.x,
+    y: originalTargetPosition.y,
+    z: originalTargetPosition.z,
+    duration: 0.5,
+    ease: 'power2.inOut'
+  });
 }
 function zoomCameraTo() {
   gsap.to(camera.position, {
@@ -442,9 +641,9 @@ function OnHover(object, isHovering) {
 
   if (isHovering) {
     gsap.to(object.scale, {
-      x: object.userData.initialScale.x + 0.1,
-      y: object.userData.initialScale.y + 0.1,
-      z: object.userData.initialScale.z + 0.1,
+      x: object.userData.initialScale.x + object.userData.initialScale.x * 0.1,
+      y: object.userData.initialScale.y + object.userData.initialScale.y * 0.1,
+      z: object.userData.initialScale.z + object.userData.initialScale.z * 0.1,
       duration: 0.1,
       ease: 'power2.inOut',
     })

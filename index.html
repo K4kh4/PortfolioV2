@@ -347,20 +347,20 @@
 <body>
   <div id="app"></div>
 
-  <!-- Demo buttons for testing
-  <div class="demo-buttons">
-    <button class="demo-button" onclick="openModal('work1')">Work 1</button>
-    <button class="demo-button" onclick="openModal('work2')">Work 2</button>
-    <button class="demo-button" onclick="openModal('work3')">Work 3</button>
-    <button class="demo-button" onclick="openModal('work4')">Work 4</button>
-    <button class="demo-button" onclick="openModal('work5')">Work 5</button>
-    <button class="demo-button" onclick="openModal('about')">About</button>
-    <button class="demo-button" onclick="openModal('contact')">Contact</button>
+  <!-- Demo buttons for testing (if needed, use window.openModal('work1') etc in console)
+  <div class="demo-buttons" style="display: none;">
+    <button class="demo-button" data-modal="work1">Work 1</button>
+    <button class="demo-button" data-modal="work2">Work 2</button>
+    <button class="demo-button" data-modal="work3">Work 3</button>
+    <button class="demo-button" data-modal="work4">Work 4</button>
+    <button class="demo-button" data-modal="work5">Work 5</button>
+    <button class="demo-button" data-modal="about">About</button>
+    <button class="demo-button" data-modal="contact">Contact</button>
   </div> -->
 
   <!-- Work 1 Modal - Lidl Pfand ID -->
   <div class="work1 modal">
-    <button class="modal-exit-button" onclick="closeModal()">×</button>
+    <button class="modal-exit-button">×</button>
     <div class="work-modal-container">
       <div class="logo-column">
         <div class="header">
@@ -368,8 +368,8 @@
           <p class="tagline">That Copywriter Who Doesn't Let Ideas Slip Away</p>
         </div>
         <div class="navigation">
-          <button class="nav-arrow" onclick="navigateWork('prev')">←</button>
-          <button class="nav-arrow" onclick="navigateWork('next')">→</button>
+          <button class="nav-arrow">←</button>
+          <button class="nav-arrow">→</button>
         </div>
       </div>
 
@@ -404,16 +404,16 @@
             <img src="/works/Work1_P1.jpeg" alt="Pfand ID bottles display">
           </div>
           <div class="media-item">
-            <img src="/works/Work1_P1.jpg" alt="Campaign poster">
+            <img src="/works/Work1_P1.jpeg" alt="Campaign poster">
           </div>
           <div class="media-item">
-            <img src="/works/Work1_P1.jpg" alt="Pfand machine interface">
+            <img src="/works/Work1_P1.jpeg" alt="Pfand machine interface">
           </div>
           <div class="media-item">
-            <img src="/works/Work1_P1.jpg" alt="Campaign materials">
+            <img src="/works/Work1_P1.jpeg" alt="Campaign materials">
           </div>
           <div class="media-item">
-            <img src="/works/Work1_P1s.jpg" alt="Street implementation">
+            <img src="/works/Work1_P1.jpeg" alt="Street implementation">
           </div>
           <div class="media-item">
             <!-- Replace the src URL with your actual YouTube video URL -->
@@ -426,7 +426,7 @@
 
   <!-- Work 2 Modal - Project Alpha -->
   <div class="work2 modal">
-    <button class="modal-exit-button" onclick="closeModal()">×</button>
+    <button class="modal-exit-button">×</button>
     <div class="work-modal-container">
       <div class="logo-column">
         <div class="header">
@@ -434,8 +434,8 @@
           <p class="tagline">That Copywriter Who Doesn't Let Ideas Slip Away</p>
         </div>
         <div class="navigation">
-          <button class="nav-arrow" onclick="navigateWork('prev')">←</button>
-          <button class="nav-arrow" onclick="navigateWork('next')">→</button>
+          <button class="nav-arrow">←</button>
+          <button class="nav-arrow">→</button>
         </div>
       </div>
 
@@ -485,7 +485,7 @@
 
   <!-- Work 3 Modal - Digital Innovation -->
   <div class="work3 modal">
-    <button class="modal-exit-button" onclick="closeModal()">×</button>
+    <button class="modal-exit-button">×</button>
     <div class="work-modal-container">
       <div class="logo-column">
         <div class="header">
@@ -493,8 +493,8 @@
           <p class="tagline">That Copywriter Who Doesn't Let Ideas Slip Away</p>
         </div>
         <div class="navigation">
-          <button class="nav-arrow" onclick="navigateWork('prev')">←</button>
-          <button class="nav-arrow" onclick="navigateWork('next')">→</button>
+          <button class="nav-arrow">←</button>
+          <button class="nav-arrow">→</button>
         </div>
       </div>
 
@@ -544,7 +544,7 @@
 
   <!-- Work 4 Modal - Brand Activation -->
   <div class="work4 modal">
-    <button class="modal-exit-button" onclick="closeModal()">×</button>
+    <button class="modal-exit-button">×</button>
     <div class="work-modal-container">
       <div class="logo-column">
         <div class="header">
@@ -552,8 +552,8 @@
           <p class="tagline">That Copywriter Who Doesn't Let Ideas Slip Away</p>
         </div>
         <div class="navigation">
-          <button class="nav-arrow" onclick="navigateWork('prev')">←</button>
-          <button class="nav-arrow" onclick="navigateWork('next')">→</button>
+          <button class="nav-arrow">←</button>
+          <button class="nav-arrow">→</button>
         </div>
       </div>
 
@@ -603,7 +603,7 @@
 
   <!-- Work 5 Modal - Creative Campaign -->
   <div class="work5 modal">
-    <button class="modal-exit-button" onclick="closeModal()">×</button>
+    <button class="modal-exit-button">×</button>
     <div class="work-modal-container">
       <div class="logo-column">
         <div class="header">
@@ -611,8 +611,8 @@
           <p class="tagline">That Copywriter Who Doesn't Let Ideas Slip Away</p>
         </div>
         <div class="navigation">
-          <button class="nav-arrow" onclick="navigateWork('prev')">←</button>
-          <button class="nav-arrow" onclick="navigateWork('next')">→</button>
+          <button class="nav-arrow">←</button>
+          <button class="nav-arrow">→</button>
         </div>
       </div>
 
@@ -663,7 +663,7 @@
 
   <!-- About Modal -->
   <div class="about modal">
-    <button class="modal-exit-button" onclick="closeModal()">×</button>
+    <button class="modal-exit-button">×</button>
     <h1 class="modal-title">About Me</h1>
     <h2>Creative Copywriter & Strategist</h2>
     <p>I'm a copywriter who believes great ideas shouldn't slip away. With over 8 years of experience in advertising and creative strategy, I specialize in crafting compelling narratives that drive meaningful action.</p>
@@ -672,7 +672,7 @@
 
   <!-- Contact Modal -->
   <div class="contact modal">
-    <button class="modal-exit-button" onclick="closeModal()">×</button>
+    <button class="modal-exit-button">×</button>
     <h1 class="modal-title">Contact</h1>
     <h2>Let's Create Something Amazing</h2>
     <p>Ready to bring your ideas to life? I'm always excited to collaborate on projects that make a difference.</p>
@@ -686,77 +686,6 @@
   </div>
 
   <script type="module" src="/src/main.js"></script>
-  
-  <script>
-    // Current work index for navigation
-    let currentWork = 1;
-    const totalWorks = 5;
-
-    // Open modal function
-    function openModal(modalClass) {
-      // Close any open modals first
-      closeModal();
-      
-      // Open the requested modal
-      const modal = document.querySelector('.' + modalClass);
-      if (modal) {
-        modal.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Prevent body scroll
-        
-        // Update current work index if it's a work modal
-        if (modalClass.startsWith('work')) {
-          currentWork = parseInt(modalClass.replace('work', ''));
-        }
-      }
-    }
-
-    // Close modal function
-    function closeModal() {
-      const activeModal = document.querySelector('.modal.active');
-      if (activeModal) {
-        activeModal.classList.remove('active');
-        document.body.style.overflow = 'auto'; // Restore body scroll
-      }
-    }
-
-    // Navigate between works
-    function navigateWork(direction) {
-      let newWork;
-      
-      if (direction === 'next') {
-        newWork = currentWork < totalWorks ? currentWork + 1 : 1;
-      } else {
-        newWork = currentWork > 1 ? currentWork - 1 : totalWorks;
-      }
-      
-      // Close current modal and open new one
-      closeModal();
-      setTimeout(() => {
-        openModal('work' + newWork);
-      }, 100);
-    }
-
-    // Close modal when clicking outside content
-    document.addEventListener('click', function(e) {
-      if (e.target.classList.contains('modal') && e.target.classList.contains('active')) {
-        closeModal();
-      }
-    });
-
-    // Close modal with Escape key
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') {
-        closeModal();
-      }
-    });
-
-    // Prevent clicks inside modal content from closing modal
-    document.addEventListener('click', function(e) {
-      if (e.target.closest('.work-modal-container, .about h1, .about h2, .about p, .contact h1, .contact h2, .contact p')) {
-        e.stopPropagation();
-      }
-    });
-  </script>
 </body>
 
 </html>
