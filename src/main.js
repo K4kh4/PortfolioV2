@@ -354,29 +354,28 @@ loader.setDRACOLoader(dracoLoader);
 loader.load("/models/Room_V1-Compresed.glb", (gltf) => {
   gltf.scene.traverse((child) => {
     if (child.isMesh) {
-      //setting up textures
-      // if (child.name.includes("First")) {
-      //   const material = new THREE.MeshBasicMaterial()
-      //   material.map = loadedTexture.First.day
-      //   child.material = material
+      // setting up textures
+      if (child.name.includes("First")) {
+        const material = new THREE.MeshBasicMaterial()
+        material.map = loadedTexture.First.day
+        child.material = material
 
-      // }
-      // if (child.name.includes("Second")) {
-      //   const material = new THREE.MeshBasicMaterial()
-      //   material.map = loadedTexture.Second.day
-      //   child.material = material
-      // }
-      // if (child.name.includes("Third")) {
-      //   const material = new THREE.MeshBasicMaterial()
-      //   material.map = loadedTexture.Third.day
-      //   child.material = material
-      // }
-      // if (child.material.map) {
-      //   child.material.map.minFilter = THREE.LinearFilter;
-      // }
+      }
+      if (child.name.includes("Second")) {
+        const material = new THREE.MeshBasicMaterial()
+        material.map = loadedTexture.Second.day
+        child.material = material
+      }
+      if (child.name.includes("Third")) {
+        const material = new THREE.MeshBasicMaterial()
+        material.map = loadedTexture.Third.day
+        child.material = material
+      }
+      if (child.material.map) {
+        child.material.map.minFilter = THREE.LinearFilter;
+      }
       // setting up layers 
-      const material = new THREE.MeshStandardMaterial();
-      child.material = material
+
       
       if (child.name.includes("Raycaster")) {
         raycastObjects.push(child);
@@ -405,14 +404,7 @@ loader.load("/models/Room_V1-Compresed.glb", (gltf) => {
   })
   scene.add(gltf.scene)
 //add ambient light with light blue tint
-const ambientLight = new THREE.AmbientLight(0xb3d9ff, 0.4);
-scene.add(ambientLight);
 
-//add directional light
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-directionalLight.position.set(5, 10, 5);
-directionalLight.castShadow = true;
-scene.add(directionalLight);
 
 
 
