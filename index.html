@@ -301,6 +301,41 @@
       margin-bottom: 20px;
     }
 
+    /* Loading Modal Styles */
+    .loading-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #1a1a1a;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Helvetica', sans-serif;
+    }
+
+    .loading-content {
+      text-align: center;
+    }
+
+    #loading-text {
+      font-size: 3rem;
+      font-weight: bold;
+      color: #ffffff;
+      margin: 0;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      animation: fadeInOut 1.5s ease-in-out;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateY(20px); }
+      50% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
     /* Demo buttons for testing */
     .demo-buttons {
       position: fixed;
@@ -698,6 +733,13 @@
     <p>Email: chris@example.com<br>
        LinkedIn: /in/christsirigotis<br>
        Phone: +49 xxx xxx xxxx</p>
+  </div>
+
+  <!-- Loading Modal -->
+  <div id="loading-modal" class="loading-modal">
+    <div class="loading-content">
+      <h1 id="loading-text">Who's there?</h1>
+    </div>
   </div>
 
   <div id="experience">

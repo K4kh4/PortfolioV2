@@ -6,7 +6,34 @@ import './style.scss'
 
 import gsap from 'gsap';
 
-let ModalOpen = false;
+// Import raycasting functionality
+import {
+  raycastObjects,
+  createAllHitboxes,
+  updatePointer,
+  performRaycast,
+  handleHoverEffects,
+  handleCursorChanges,
+  handleClickEvents,
+  resetRaycastState,
+  getCurrentHoverObject,
+  setCurrentHoverObject
+} from './raycast.js';
+
+// Import modal functionality
+import {
+  isModalOpen,
+  setModalOpen,
+  openModal,
+  closeModal,
+  showModal,
+  hideModal,
+  navigateWork,
+  initializeModals,
+  testModal,
+  checkModalStates
+} from './modal.js';
+
 //notebook
 let notebookObject;
 
@@ -66,218 +93,21 @@ const interactiveObjects = [
 //
 
 
-//modals and navigation
-let currentWork = 1;
-const totalWorks = 5;
-
-// Modal references - initialized after DOM loads
-let Modals = {};
-
-// Unified modal management functions
-const openModal = (modalClass) => {
-
-  // Check if any modal is currently open
-  const currentActiveModal = document.querySelector('.modal.active');
-  const isAnotherModalOpen = currentActiveModal && !currentActiveModal.classList.contains(modalClass);
-
-  // Close any open modals first (but don't wait for animation)
-  if (isAnotherModalOpen) {
-    currentActiveModal.classList.remove('active');
-    currentActiveModal.style.display = 'none';
-  }
-
-  // Open the requested modal
-  const modal = typeof modalClass === 'string' ?
-    document.querySelector('.modal.' + modalClass) : modalClass;
-
-
-  if (modal) {
-
-    // Clear any previous GSAP properties and reset modal state
-    gsap.killTweensOf(modal);
-    gsap.set(modal, { clearProps: "all" });
-    modal.style.opacity = '';
-    modal.style.display = 'block';
-
-    ModalOpen = true;
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden'; // Prevent body scroll
-
-    // Update current work index if it's a work modal
-    if (modal.classList.contains('work1')) currentWork = 1;
-    else if (modal.classList.contains('work2')) currentWork = 2;
-    else if (modal.classList.contains('work3')) currentWork = 3;
-    else if (modal.classList.contains('work4')) currentWork = 4;
-    else if (modal.classList.contains('work5')) currentWork = 5;
-
-    // Choose animation based on whether another modal was open
-    if (isAnotherModalOpen) {
-      // Instant switch - no animation
-      gsap.set(modal, { 
-        opacity: 1,
-        scale: 1,
-        transformOrigin: "center center"
-      });
-      console.log(`Modal switched instantly: ${modalClass}`);
-    } else {
-      // Scale up animation from 0 to fill screen
-      gsap.set(modal, { 
-        opacity: 1,
-        scale: 0,
-        transformOrigin: "center center"
-      });
-      gsap.to(modal, {
-        scale: 1,
-        duration: 0.5,
-        ease: "back.out(1.7)"
-      });
-      console.log(`Modal opened with scale animation: ${modalClass}`);
-    }
-
-    console.log(`Modal opened successfully: ${modalClass}`);
-  } else {
-    console.error(`Modal not found for class: .modal.${modalClass}`);
-  }
-}
-
-const closeModal = () => {
-  const activeModal = document.querySelector('.modal.active');
-  if (activeModal) {
-    gsap.to(activeModal, {
-      opacity: 0,
-      scale: 0,
-      duration: 0.5,
-      ease: "back.in(1.7)",
-      onComplete: () => {
-        activeModal.classList.remove('active');
-        // Clear any GSAP properties that might interfere
-        gsap.set(activeModal, { clearProps: "all" });
-        activeModal.style.display = 'none';
-        activeModal.style.opacity = '';
-        document.body.style.overflow = 'auto'; // Restore body scroll
-
-        // DON'T reset notebook and camera - keep them as they are
-        // Users can continue clicking work buttons without reopening notebook
-
-        // Reset modal state AFTER all animations are complete
-        ModalOpen = false;
-        console.log('Modal closed - notebook and camera remain positioned');
-      }
-    });
-  } else {
-    // If no active modal, just reset the state
-    ModalOpen = false;
-  }
-}
-
-const showModal = (modal) => {
-  if (typeof modal === 'string') {
-    openModal(modal);
-  } else {
-    openModal(modal.classList[0]); // Get first class name
-  }
-}
-
-const hideModal = (modal) => {
-  closeModal();
-}
-
-// Navigate between works
-const navigateWork = (direction) => {
-  let newWork;
-
-  if (direction === 'next') {
-    newWork = currentWork < totalWorks ? currentWork + 1 : 1;
-  } else {
-    newWork = currentWork > 1 ? currentWork - 1 : totalWorks;
-  }
-
-  // Close current modal and open new one
-  closeModal();
-  setTimeout(() => {
-    openModal('work' + newWork);
-  }, 100);
-}
-
-// Initialize event listeners when DOM is ready
+// Modal system initialization and global exports
 document.addEventListener('DOMContentLoaded', () => {
-  // Initialize modal references
-  Modals = {
-    work1: document.querySelector('.modal.work1'),
-    work2: document.querySelector('.modal.work2'),
-    work3: document.querySelector('.modal.work3'),
-    work4: document.querySelector('.modal.work4'),
-    work5: document.querySelector('.modal.work5'),
-    about: document.querySelector('.modal.about'),
-    contact: document.querySelector('.modal.contact')
-  };
-
-  // Modal exit button listeners
-  document.querySelectorAll('.modal-exit-button').forEach(button => {
-    button.addEventListener('click', (e) => {
-      e.stopPropagation();
-      closeModal();
-    });
-  });
-
-  // Navigation button listeners
-  document.querySelectorAll('.nav-arrow').forEach(button => {
-    button.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const direction = button.textContent.trim() === '←' ? 'prev' : 'next';
-      navigateWork(direction);
-    });
-  });
-
-  // Close modal when clicking outside content
-  document.addEventListener('click', function (e) {
-    if (e.target.classList.contains('modal') && e.target.classList.contains('active')) {
-      closeModal();
-    }
-  });
-
-  // Close modal with Escape key
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') {
-      closeModal();
-    }
-  });
-
-  // Prevent clicks inside modal content from closing modal
-  document.addEventListener('click', function (e) {
-    if (e.target.closest('.work-modal-container, .about h1, .about h2, .about p, .contact h1, .contact h2, .contact p')) {
-      e.stopPropagation();
-    }
-  });
+  // Initialize modal system
+  initializeModals();
+  
+  // Start loading messages
+  startLoadingMessages();
 });
 
 // Make functions globally available for any remaining inline handlers
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.navigateWork = navigateWork;
-
-// Debug function to test modals from console
-window.testModal = (workNumber) => {
-  console.log(`Testing modal work${workNumber}`);
-  openModal(`work${workNumber}`);
-};
-
-// Debug function to check modal states
-window.checkModalStates = () => {
-  console.log('Current modal states:');
-  for (let i = 1; i <= 5; i++) {
-    const modal = document.querySelector(`.modal.work${i}`);
-    if (modal) {
-      console.log(`work${i}:`, {
-        display: modal.style.display,
-        opacity: modal.style.opacity,
-        hasActive: modal.classList.contains('active'),
-        computedDisplay: window.getComputedStyle(modal).display,
-        computedOpacity: window.getComputedStyle(modal).opacity
-      });
-    }
-  }
-};
+window.testModal = testModal;
+window.checkModalStates = checkModalStates;
 
 // Function to manually reset notebook and camera (if needed later)
 window.resetNotebookView = () => {
@@ -300,8 +130,6 @@ const sizes = {
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height, 0.1, 1000);
-const raycaster = new THREE.Raycaster();
-const pointer = new THREE.Vector2();
 
 //loaders
 const textureLoader = new THREE.TextureLoader();
@@ -309,15 +137,22 @@ const textureLoader = new THREE.TextureLoader();
 
 const textureMap = {
   First: {
-    day: "/textures/Frist_Texture_Set_Deosed.webp"
+    day: "/textures/First_Texture_Set_Day_Denoised_Compressed.webp"
 
   },
   Second: {
-    day: "/textures/Second_Texture_Set_Deosed.webp"
+    day: "/textures/Second_Texture_Set_Day_Denoised_Compressed.webp"
   },
   Third: {
-    day: "/textures/Third_Texture_Set_Deosed.webp"
+    day: "/textures/Third_Texture_Set_Day_Denoised_Compressed.webp"
+  },
+  Fourth: {
+    day: "/textures/Forth_Texture_Set_Day_Denoised_Compressed.webp"
+  },
+  Fifth: {
+    day: "/textures/Fifth_Texture_Set_Day_Denoised_Compressed.webp"
   }
+
 };
 const loadedTexture = {
   First: {
@@ -328,23 +163,111 @@ const loadedTexture = {
   },
   Third: {
     day: {}
+  },
+  Fourth: {
+    day: {}
+  },
+  Fifth: {
+    day: {}
   }
+
 };
+
+// Simple loading tracker
+let texturesLoaded = 0;
+let modelLoaded = false;
+const totalTextures = Object.keys(textureMap).length;
+
+// Loading messages
+const loadingMessages = [
+  "Who's there?",
+  "Just a sec!",
+  "Coming!",
+  "Hold on!",
+  "Be right there…"
+];
+let currentMessageIndex = 0;
+let messageInterval;
+
+/**
+ * Start the loading message cycle
+ */
+function startLoadingMessages() {
+  const loadingText = document.getElementById('loading-text');
+  if (!loadingText) return;
+  
+  // Show first message
+  loadingText.textContent = loadingMessages[currentMessageIndex];
+  
+  // Cycle through messages every 2 seconds
+  messageInterval = setInterval(() => {
+    currentMessageIndex = (currentMessageIndex + 1) % loadingMessages.length;
+    loadingText.textContent = loadingMessages[currentMessageIndex];
+    
+    // Restart animation
+    loadingText.style.animation = 'none';
+    loadingText.offsetHeight; // Trigger reflow
+    loadingText.style.animation = 'fadeInOut 1.5s ease-in-out';
+  }, 2000);
+}
+
+/**
+ * Hide the loading modal with animation
+ */
+function hideLoadingModal() {
+  const loadingModal = document.getElementById('loading-modal');
+  if (!loadingModal) return;
+  
+  // Clear message interval
+  if (messageInterval) {
+    clearInterval(messageInterval);
+  }
+  
+  // Fade out the loading modal
+  loadingModal.style.transition = 'opacity 0.5s ease-out';
+  loadingModal.style.opacity = '0';
+  
+  setTimeout(() => {
+    loadingModal.style.display = 'none';
+  }, 500);
+}
+
+/**
+ * Called when all assets are loaded
+ */
+function onLoadComplete() {
+  console.log('🎉 All assets loaded! Portfolio ready.');
+  
+  // Hide loading modal
+  hideLoadingModal();
+  
+  // Add any post-loading initialization here
+  console.log('✅ Ready for interaction!');
+}
+
+/**
+ * Check if everything is loaded
+ */
+function checkIfComplete() {
+  if (texturesLoaded === totalTextures && modelLoaded) {
+    onLoadComplete();
+  }
+}
+
 Object.entries(textureMap).forEach(([key, value]) => {
-  const dayTexture = textureLoader.load(value.day);
+  const dayTexture = textureLoader.load(
+    value.day,
+    () => {
+      texturesLoaded++;
+      console.log(`Texture loaded: ${key} (${texturesLoaded}/${totalTextures})`);
+      checkIfComplete();
+    }
+  );
   dayTexture.flipY = false;
   dayTexture.colorSpace = THREE.SRGBColorSpace;
   loadedTexture[key].day = dayTexture;
-  // const nightTexture = textureLoader.load(value.night);
-  // nightTexture.flipY = false;
-  // nightTexture.colorSpace = THREE.SRGBColorSpace;
-  // loadedTexture[key].night = nightTexture;
 });
 
-// racating
-const raycastObjects = [];
-let currentIntersect = [];
-let currentHoverObject;
 //model loader
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath('/draco/');
@@ -355,13 +278,13 @@ loader.load("/models/Room_V1-Compresed.glb", (gltf) => {
   gltf.scene.traverse((child) => {
     if (child.isMesh) {
       // setting up textures
-      if (child.name.includes("First")) {
+      if (child.name.includes("First_")) {
         const material = new THREE.MeshBasicMaterial()
         material.map = loadedTexture.First.day
         child.material = material
-
       }
-      if (child.name.includes("Second")) {
+    
+      if (child.name.includes("Second_Room")) {//change the fucking name
         const material = new THREE.MeshBasicMaterial()
         material.map = loadedTexture.Second.day
         child.material = material
@@ -371,6 +294,17 @@ loader.load("/models/Room_V1-Compresed.glb", (gltf) => {
         material.map = loadedTexture.Third.day
         child.material = material
       }
+      if (child.name.includes("Fourth")) {
+        const material = new THREE.MeshBasicMaterial()
+        material.map = loadedTexture.Fourth.day
+        child.material = material
+      }
+      if (child.name.includes("Fifth")) {
+        const material = new THREE.MeshBasicMaterial()
+        material.map = loadedTexture.Fifth.day
+        child.material = material
+      }
+     
       if (child.material.map) {
         child.material.map.minFilter = THREE.LinearFilter;
       }
@@ -391,15 +325,15 @@ loader.load("/models/Room_V1-Compresed.glb", (gltf) => {
       }
 
       // Check if this object matches any interactive object
-      interactiveObjects.forEach(interactiveObj => {
-        if (child.name.includes(interactiveObj.name)) {
-          interactiveObj.object = child;
-          console.log(`Found interactive object: ${interactiveObj.name}`);
-          if (interactiveObj.name.includes("WorkButton_")) {
-            child.scale.set(0, 0, 0);
-          }
-        }
-      });
+      // interactiveObjects.forEach(interactiveObj => {
+      //   if (child.name.includes(interactiveObj.name)) {
+      //     interactiveObj.object = child;
+      //     console.log(`Found interactive object: ${interactiveObj.name}`);
+      //     if (interactiveObj.name.includes("WorkButton_")) {
+      //       child.scale.set(0, 0, 0);
+      //     }
+      //   }
+      // });
     }
   })
   scene.add(gltf.scene)
@@ -410,6 +344,14 @@ loader.load("/models/Room_V1-Compresed.glb", (gltf) => {
 
   // Log which interactive objects were found
   logInteractiveObjectsStatus();
+  
+  // Create static hitboxes for all interactive objects after model loads
+  createAllHitboxes(scene);
+  
+  // Mark model as loaded
+  modelLoaded = true;
+  console.log('Model loaded successfully!');
+  checkIfComplete();
 })
 //model loader end
 
@@ -426,9 +368,9 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 // average position for notebook
 const cameraNotebookPosition = new THREE.Vector3(1.0116149200302174, 6.571313242426443, -0.8049478528131928);
 const targetNotebookPosition = new THREE.Vector3(-1.0674379059115109, 4.033968206624388, -0.790316383561921);
-//set start position
-const originalCameraPosition = new THREE.Vector3(5, 5.5, -11.7);
-const originalTargetPosition = new THREE.Vector3(1.4, 2.1, -1.6);
+//set start position Camera Position: x:12.19, y:6.97, z:9.10 | Target: x:0.09, y:2.78, z:0.08
+const originalCameraPosition = new THREE.Vector3(12.19, 6.97, 9.10);
+const originalTargetPosition = new THREE.Vector3(0.09, 2.78, 0.08);
 
 camera.position.copy(originalCameraPosition);
 const controls = new OrbitControls(camera, canvas)
@@ -449,25 +391,12 @@ function OnResize() {
 }
 
 function OnMouseMove(event) {
-  pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-  pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
+  updatePointer(event);
 }
 
 function OnClick() {
-  if (currentIntersect.length > 0) {
-    const currentIntersectObject = currentIntersect[0].object;
-    if (currentIntersectObject.name.includes("Pointer")) {
-
-      // Check if the clicked object matches any interactive object
-      const clickedInteractiveObject = interactiveObjects.find(interactiveObj =>
-        currentIntersectObject.name.includes(interactiveObj.name)
-      );
-
-      if (clickedInteractiveObject) {
-        handleObjectClick(clickedInteractiveObject);
-      }
-    }
-  }
+  const intersections = performRaycast(camera);
+  handleClickEvents(intersections, interactiveObjects, handleObjectClick);
 }
 
 // Handle different types of object clicks
@@ -530,6 +459,7 @@ function logInteractiveObjectsStatus() {
   });
 }
 
+
 //event listeners
 window.addEventListener("mousemove", (e) => { OnMouseMove(e); })
 window.addEventListener("resize", OnResize);
@@ -537,9 +467,9 @@ window.addEventListener("click", OnClick);
 // update loop
 const Update = () => {
   // Always continue the animation loop
+  
   window.requestAnimationFrame(Update);
-
-  if (ModalOpen) {
+  if (isModalOpen()) {
     // Still render the scene but skip interactions when modal is open
     renderer.render(scene, camera);
     return;
@@ -547,40 +477,12 @@ const Update = () => {
 
   controls.update();
   renderer.render(scene, camera);
-  raycaster.setFromCamera(pointer, camera);
-  currentIntersect = raycaster.intersectObjects(raycastObjects);
-
-  if (currentIntersect.length > 0) {
-    // need to add layers like clickable, hoverable, animated, 
-    const currentIntersectObject = currentIntersect[0].object;
-    if (currentIntersectObject.name.includes("Hover")) {
-      if (currentIntersectObject !== currentHoverObject) {
-        if (currentHoverObject) {
-          OnHover(currentHoverObject, false);
-        }
-        OnHover(currentIntersectObject, true);
-        currentHoverObject = currentIntersectObject;
-      }
-    }
-
-    if (currentIntersectObject.name.includes("Pointer")) {
-      document.body.style.cursor = "pointer";
-    }
-    else {
-      if (currentHoverObject != null) {
-        OnHover(currentHoverObject, false);
-      }
-      currentHoverObject = null;
-      document.body.style.cursor = "default";
-    }
-  }
-  else {
-    if (currentHoverObject != null) {
-      OnHover(currentHoverObject, false);
-    }
-    currentHoverObject = null;
-    document.body.style.cursor = "default";
-  }
+  
+  // Perform raycasting and handle interactions
+  const intersections = performRaycast(camera);
+  const intersectionData = handleHoverEffects(intersections, OnHover);
+  handleCursorChanges(intersectionData);
+ 
 }
 
 function OpenNoteBook(object) {
@@ -664,12 +566,14 @@ function OnHover(object, isHovering) {
   gsap.killTweensOf(object.scale);
   gsap.killTweensOf(object.rotation);
   gsap.killTweensOf(object.position);
-
+  let scalePercentage=1.2
   if (isHovering) {
+    
+   
     gsap.to(object.scale, {
-      x: object.userData.initialScale.x + object.userData.initialScale.x * 0.2,
-      y: object.userData.initialScale.y + object.userData.initialScale.y * 0.2,
-      z: object.userData.initialScale.z + object.userData.initialScale.z * 0.2,
+      x:  object.userData.initialScale.x * scalePercentage,
+      y: object.userData.initialScale.y * scalePercentage,
+      z: object.userData.initialScale.z * scalePercentage,
       duration: 0.1,
       ease: 'power2.inOut',
     })
@@ -704,4 +608,3 @@ function OnHover(object, isHovering) {
 
 //start update loop
 Update();
-
