@@ -10,6 +10,85 @@ const totalWorks = 5;
 // Modal references - initialized after DOM loads
 let Modals = {};
 
+// Mouse movement tracking for parallax effects
+let mouseX = 0;
+let mouseY = 0;
+let aboutModal = null;
+let animationId = null;
+let startTime = Date.now();
+
+/**
+ * Mouse movement handler for parallax effects
+ * @param {MouseEvent} e - Mouse event
+ */
+function handleMouseMove(e) {
+  if (!aboutModal || !aboutModal.classList.contains('active')) return;
+  
+  const rect = aboutModal.getBoundingClientRect();
+  mouseX = (e.clientX - rect.left) / rect.width;
+  mouseY = (e.clientY - rect.top) / rect.height;
+  
+  // No need to call updateFloatingImages here since it's handled by the animation loop
+}
+
+/**
+ * Update floating images with both mouse movement and floating animation
+ */
+function updateFloatingImages() {
+  if (!aboutModal) return;
+  
+  const floatingImages = aboutModal.querySelectorAll('.floating-image');
+  const currentTime = Date.now();
+  const elapsed = (currentTime - startTime) / 1000; // Time in seconds
+  
+  floatingImages.forEach((image, index) => {
+    const speed = parseFloat(image.dataset.speed) || 1;
+    
+    // Mouse movement parallax
+    const moveX = (mouseX - 0.5) * speed * 50; // Max 50px movement
+    const moveY = (mouseY - 0.5) * speed * 30; // Max 30px movement
+    
+    // Floating animation with different phases for each image
+    const floatSpeed = 0.5 + index * 0.1; // Different speeds for variety
+    const floatAmplitude = 10 + index * 3; // Different amplitudes
+    const floatX = Math.sin(elapsed * floatSpeed + index) * (floatAmplitude * 0.5);
+    const floatY = Math.cos(elapsed * floatSpeed * 0.7 + index) * floatAmplitude;
+    
+    // Combine both movements
+    const totalX = moveX + floatX;
+    const totalY = moveY + floatY;
+    
+    // Apply transform
+    image.style.transform = `translate(${totalX}px, ${totalY}px)`;
+  });
+}
+
+/**
+ * Start the floating animation loop
+ */
+function startFloatingAnimation() {
+  if (!aboutModal) return;
+  
+  const floatingImages = aboutModal.querySelectorAll('.floating-image');
+  console.log('Starting floating animation for', floatingImages.length, 'images');
+  
+  // Reset start time
+  startTime = Date.now();
+  
+  function animateFrame() {
+    if (!aboutModal || !aboutModal.classList.contains('active')) {
+      animationId = null;
+      return;
+    }
+    
+    updateFloatingImages();
+    animationId = requestAnimationFrame(animateFrame);
+  }
+  
+  // Start the animation loop
+  animationId = requestAnimationFrame(animateFrame);
+}
+
 /**
  * Get current modal open state
  * @returns {boolean} - Whether a modal is currently open
@@ -62,6 +141,20 @@ export const openModal = (modalClass) => {
     else if (modal.classList.contains('work3')) currentWork = 3;
     else if (modal.classList.contains('work4')) currentWork = 4;
     else if (modal.classList.contains('work5')) currentWork = 5;
+    
+    // Special handling for about modal
+    if (modal.classList.contains('about')) {
+      aboutModal = modal;
+      console.log('About modal opened, setting up floating effects');
+      
+      // Small delay to ensure modal is fully rendered
+      setTimeout(() => {
+        startFloatingAnimation();
+        // Add mouse movement listener
+        document.addEventListener('mousemove', handleMouseMove);
+        console.log('Floating effects initialized');
+      }, 100);
+    }
 
     // Choose animation based on whether another modal was open
     if (isAnotherModalOpen) {
@@ -119,6 +212,17 @@ export const closeModal = (navigate = false, direction = 1) => {
   
           // Reset modal state AFTER all animations are complete
           ModalOpen = false;
+          
+          // Remove mouse movement listener and stop animation if about modal is closed
+          if (activeModal.classList.contains('about')) {
+            document.removeEventListener('mousemove', handleMouseMove);
+            if (animationId) {
+              cancelAnimationFrame(animationId);
+              animationId = null;
+            }
+            aboutModal = null;
+          }
+          
           console.log('Modal closed - notebook and camera remain positioned');
         }
       });
@@ -142,6 +246,17 @@ export const closeModal = (navigate = false, direction = 1) => {
 
         // Reset modal state AFTER all animations are complete
         ModalOpen = false;
+        
+        // Remove mouse movement listener and stop animation if about modal is closed
+        if (activeModal.classList.contains('about')) {
+          document.removeEventListener('mousemove', handleMouseMove);
+          if (animationId) {
+            cancelAnimationFrame(animationId);
+            animationId = null;
+          }
+          aboutModal = null;
+        }
+        
         console.log('Modal closed - notebook and camera remain positioned');
       }
     });
@@ -277,6 +392,27 @@ export const checkModalStates = () => {
 };
 
 /**
+ * Debug function to check floating effects
+ */
+const checkFloatingEffects = () => {
+  console.log('Floating effects debug:');
+  console.log('About modal:', aboutModal);
+  console.log('Animation ID:', animationId);
+  console.log('Mouse position:', { mouseX, mouseY });
+  
+  if (aboutModal) {
+    const floatingImages = aboutModal.querySelectorAll('.floating-image');
+    console.log('Floating images found:', floatingImages.length);
+    floatingImages.forEach((img, index) => {
+      console.log(`Image ${index}:`, {
+        speed: img.dataset.speed,
+        transform: img.style.transform
+      });
+    });
+  }
+};
+
+/**
  * Get current work number
  * @returns {number} - Current work number (1-5)
  */
@@ -291,3 +427,6 @@ export function getCurrentWork() {
 export function getTotalWorks() {
   return totalWorks;
 }
+
+// Export debug function
+export { checkFloatingEffects };

@@ -231,10 +231,113 @@
       display: flex;
       align-items: flex-end;
       justify-content: flex-start;
-      background-image: url('/works/about_me_Small_nobck.png');
-      background-repeat: no-repeat;
-      background-position: center bottom;
-      background-size: auto 70%;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Floating Images Container */
+    .floating-images {
+      position: absolute;
+      top: 0;
+      right: 20%;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .floating-image {
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .floating-image img {
+      width: auto;
+      height: auto;
+      max-width: none;
+      display: block;
+    }
+
+    /* Background Layer - behind everything */
+    .background-layer {
+      z-index: 1;
+    }
+
+    /* Building image positioning */
+    .floating-image[data-speed="0.5"] {
+      bottom: 25%;
+      right: 0%;
+      opacity: 1;
+    }
+
+    .floating-image[data-speed="0.5"] img {
+      height: 300px;
+    }
+ /* Medusa image */
+ .floating-image[data-speed="1.0"] {
+      bottom: 10%;
+      right: 20%;
+      opacity: 1;
+      z-index: 1;
+     
+    }
+
+    .floating-image[data-speed="1.0"] img {
+      height: 350px;
+      
+    }
+   /* Boyfriend image */
+   .floating-image[data-speed="0.7"] {
+      bottom: 10%;
+      right: 10%;
+      opacity: 1;
+      z-index: 1;
+    }
+
+    .floating-image[data-speed="0.7"] img {
+      height: 550px;
+    }
+    
+
+    /* Main Layer - Natia's portrait */
+    .main-layer {
+      z-index: 2;
+      top: 65%;
+      right: 10%;
+    }
+
+    .floating-image[data-speed="0.8"] img {
+      height: 400px;
+    }
+
+    /* Foreground Layer - floating in front */
+    .foreground-layer {
+      z-index: 3;
+    }
+
+    /* Blue berry image */
+    .floating-image[data-speed="1.2"] {
+      bottom: 0%;
+      right: 15%;
+      opacity: 1;
+    }
+
+    .floating-image[data-speed="1.2"] img {
+      height: 120px;
+    }
+
+   
+
+    
+ /* Star image positioning */
+ .floating-image[data-speed="0.3"] {
+      bottom: 10%;
+      right: 35%;
+      opacity: 1;
+      z-index: 5;
+    }
+
+    .floating-image[data-speed="0.3"] img {
+      height: 150px;
     }
 
     .contact {
@@ -252,11 +355,12 @@
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
-      z-index: 1;
+      z-index: 4;
       text-align: left;
       background: transparent;
       margin-left: 5%;
       margin-bottom: 5%;
+      position: relative;
     }
 
     .about .modal-title {
@@ -334,6 +438,17 @@
       0% { opacity: 0; transform: translateY(20px); }
       50% { opacity: 1; transform: translateY(0); }
       100% { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes float {
+      0%, 100% { 
+        transform: translateY(0px) translateX(0px);
+        filter: brightness(1);
+      }
+      50% { 
+        transform: translateY(-10px) translateX(5px);
+        filter: brightness(1.1);
+      }
     }
 
     /* Demo buttons for testing */
@@ -712,15 +827,43 @@
   <!-- About Modal -->
   <div class="about modal">
     <button class="modal-exit-button">×</button>
+    
+    <!-- Floating Images -->
+    <div class="floating-images">
+      <!-- Background layer -->
+      <div class="floating-image background-layer" data-speed="0.5">
+        <img src="/works/AboutMe/building.png" alt="Building">
+      </div>
+      <div class="floating-image background-layer" data-speed="0.3">
+        <img src="/works/AboutMe/star.png" alt="Star">
+      </div>
+      
+      <!-- Main layer -->
+      <div class="floating-image main-layer" data-speed="0.8">
+        <img src="/works/AboutMe/Natia.png" alt="Natia" class="main-portrait">
+      </div>
+      
+      <!-- Foreground layer -->
+      <div class="floating-image foreground-layer" data-speed="1.2">
+        <img src="/works/AboutMe/blueBerry.png" alt="Blue Berry">
+      </div>
+      <div class="floating-image foreground-layer" data-speed="1.0">
+        <img src="/works/AboutMe/medusa.png" alt="Medusa">
+      </div>
+      <div class="floating-image foreground-layer" data-speed="0.7">
+        <img src="/works/AboutMe/NatiassBoyfriend.png" alt="Natia's Boyfriend">
+      </div>
+    </div>
+    
     <div class="about-content">
       <h1 class="modal-title">Hey there!</h1>
-      <h2>I’m Natia. </h2>
-      <p>Growing up, I was always told that I had a perfect speech pattern for public speaking and I should have kept it in mind for my future career. </p>
-      <p>I choose copywriting instead and ever since my mom is trying to figure out what is it,  that I actually do.</p>
-      <p>It takes approximately 7 minutes to figure out that I’m an only child and for some people - even less, that I’m a March Piscies. So far I can’t figure out what’s my tell. </p>
-      <p>Despite the fact that I’ve been rocking Resting B face ever since preschool, I know for a fact that I’m a major personality hire, besides my talents :) </p>
-      <p>Speaking of talents, I have a natural born gift telling apart authentic and performative. It’s a blessing and a curse at the same time. </p>
-    <p>I never regret anything in my life, but I’ll always feel bitter that I’ll never write anything remotely as perfect as ‘The Free Churro' episode in Bojack Horsman. </p>
+      <h2>I'm Natia. </h2>
+      <p>Growing up, I was always told that I had a perfect speech pattern for public speaking and I should have kept it in mind for my future career. </p>
+      <p>I choose copywriting instead and ever since my mom is trying to figure out what is it,  that I actually do.</p>
+      <p>It takes approximately 7 minutes to figure out that I'm an only child and for some people - even less, that I'm a March Piscies. So far I can't figure out what's my tell. </p>
+      <p>Despite the fact that I've been rocking Resting B face ever since preschool, I know for a fact that I'm a major personality hire, besides my talents :) </p>
+      <p>Speaking of talents, I have a natural born gift telling apart authentic and performative. It's a blessing and a curse at the same time. </p>
+    <p>I never regret anything in my life, but I'll always feel bitter that I'll never write anything remotely as perfect as 'The Free Churro' episode in Bojack Horsman. </p>
     </div>
   </div>
 

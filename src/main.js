@@ -31,14 +31,15 @@ import {
   navigateWork,
   initializeModals,
   testModal,
-  checkModalStates
+  checkModalStates,
+  checkFloatingEffects
 } from './modal.js';
 
 //notebook
 let notebookObject;
 
 // Interactive objects list - each object has a 3D object reference and corresponding modal
-const interactiveObjects = [
+const buttonObjects = [
   {
     name: "MyWork_Button",
     object: null, // Will be set when loading the model
@@ -49,13 +50,13 @@ const interactiveObjects = [
     name: "AboutMe_Button",
     object: null,
     modal: "about",
-    action: "showModal"
+    action: "zoomToAboutMe"
   },
   {
-    name: "Button_Contact",
+    name: "Other_Button",
     object: null,
-    modal: "contact",
-    action: "showModal"
+    modal: "other",
+    action: "zoomToBoard"
   },
   {
     name: "WorkButton_1",
@@ -86,8 +87,19 @@ const interactiveObjects = [
     object: null,
     modal: "work5",
     action: "showModal"
+  },
+  {
+    name: "AbouButton",
+    object: null,
+    modal: "about",
+    action: "showModal"
+  },
+  {
+    name: "ResumeButton",
+    object: null,
+    modal: "about",
+    action: "zoomToResume"
   }
-
 ];
 
 //
@@ -108,12 +120,13 @@ window.closeModal = closeModal;
 window.navigateWork = navigateWork;
 window.testModal = testModal;
 window.checkModalStates = checkModalStates;
+window.checkFloatingEffects = checkFloatingEffects;
 
 // Function to manually reset notebook and camera (if needed later)
 window.resetNotebookView = () => {
   console.log('Resetting notebook and camera to original position');
   if (notebookObject) {
-    CloseNoteBook(notebookObject);
+    CloseNoteBook();
   }
 };
 
@@ -138,7 +151,6 @@ const textureLoader = new THREE.TextureLoader();
 const textureMap = {
   First: {
     day: "/textures/First_Texture_Set_Day_Denoised_Compressed.webp"
-
   },
   Second: {
     day: "/textures/Second_Texture_Set_Day_Denoised_Compressed.webp"
@@ -173,18 +185,19 @@ const loadedTexture = {
 
 };
 
-// Simple loading tracker
+// Loading tracker
 let texturesLoaded = 0;
 let modelLoaded = false;
+let objectsAssigned = false;  // Track if all 3D objects are assigned
 const totalTextures = Object.keys(textureMap).length;
 
 // Loading messages
 const loadingMessages = [
   "Who's there?",
   "Just a sec!",
-  "Coming!",
-  "Hold on!",
-  "Be right there…"
+  "Be right there.",
+  "Be right there..",
+  "Be right there..."
 ];
 let currentMessageIndex = 0;
 let messageInterval;
@@ -236,20 +249,55 @@ function hideLoadingModal() {
  * Called when all assets are loaded
  */
 function onLoadComplete() {
-  console.log('🎉 All assets loaded! Portfolio ready.');
+  console.log('🎉 All assets loaded and objects ready!');
   
   // Hide loading modal
   hideLoadingModal();
   
-  // Add any post-loading initialization here
-  console.log('✅ Ready for interaction!');
+  // Initialize notebook state
+  if (notebookObject) {
+    CloseNoteBook(notebookObject);
+  }
+  
+  // Ready for interaction
+  console.log('✅ Portfolio ready for interaction!');
+  CloseNoteBook();
 }
 
 /**
- * Check if everything is loaded
+ * Check if all objects are properly assigned
+ */
+function checkObjectsAssigned() {
+  // Check if notebook object is assigned
+  if (!notebookObject) return false;
+
+  // Check if all interactive objects have their 3D objects
+  const allObjectsAssigned = buttonObjects.every(obj => {
+    // If it's a work button, it must have an object assigned
+    if (obj.name.includes("WorkButton_")) {
+      return obj.object !== null;
+    }
+    return true; // Non-work buttons don't need to be checked
+  });
+
+  return allObjectsAssigned;
+}
+
+/**
+ * Check if everything is loaded and ready
  */
 function checkIfComplete() {
-  if (texturesLoaded === totalTextures && modelLoaded) {
+  // Check if assets are loaded
+  const assetsLoaded = texturesLoaded === totalTextures && modelLoaded;
+  
+  // Check if objects are assigned
+  if (!objectsAssigned) {
+    objectsAssigned = checkObjectsAssigned();
+  }
+
+  // Only complete when both assets are loaded AND objects are assigned
+  if (assetsLoaded && objectsAssigned) {
+    console.log('✨ All assets loaded and objects assigned!');
     onLoadComplete();
   }
 }
@@ -320,20 +368,18 @@ loader.load("/models/Room_V1-Compresed.glb", (gltf) => {
         child.userData.initialScale = new THREE.Vector3().copy(child.scale);
         child.userData.isAnimating = false;
       }
-      if (child.name.includes("Third_notebook_MyWork_Top_Raycaster_Pointer")) {
+      if (child.name.includes("Fourth_notebook_MyWork_Top_Raycaster_Pointer")) {
         notebookObject = child;
+        console.log("notebookObject was added", notebookObject);
       }
 
       // Check if this object matches any interactive object
-      // interactiveObjects.forEach(interactiveObj => {
-      //   if (child.name.includes(interactiveObj.name)) {
-      //     interactiveObj.object = child;
-      //     console.log(`Found interactive object: ${interactiveObj.name}`);
-      //     if (interactiveObj.name.includes("WorkButton_")) {
-      //       child.scale.set(0, 0, 0);
-      //     }
-      //   }
-      // });
+      buttonObjects.forEach(interactiveObj => {
+        if (child.name.includes(interactiveObj.name)) {
+          interactiveObj.object = child;
+          console.log(`Found interactive object: ${interactiveObj.name}`);
+        }
+      });
     }
   })
   scene.add(gltf.scene)
@@ -348,10 +394,20 @@ loader.load("/models/Room_V1-Compresed.glb", (gltf) => {
   // Create static hitboxes for all interactive objects after model loads
   createAllHitboxes(scene);
   
-  // Mark model as loaded
+  // Log interactive objects status
+  logInteractiveObjectsStatus();
+  
+  // Mark model as loaded and check completion
   modelLoaded = true;
-  console.log('Model loaded successfully!');
-  checkIfComplete();
+  console.log('🏠 3D Model loaded successfully!');
+  
+  // Check completion multiple times to ensure objects are assigned
+  const checkInterval = setInterval(() => {
+    checkIfComplete();
+    if (objectsAssigned) {
+      clearInterval(checkInterval);
+    }
+  }, 100);
 })
 //model loader end
 
@@ -368,6 +424,20 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 // average position for notebook
 const cameraNotebookPosition = new THREE.Vector3(1.0116149200302174, 6.571313242426443, -0.8049478528131928);
 const targetNotebookPosition = new THREE.Vector3(-1.0674379059115109, 4.033968206624388, -0.790316383561921);
+
+
+
+
+
+const cameraResumePosition = new THREE.Vector3(1.3, 4.8, -0.7);
+const targetResumePosition = new THREE.Vector3(1.2, 3.8, -2.1);
+
+
+
+const cameraBoardPosition = new THREE.Vector3(-0.3770576922642992, 5.700365453619895, 0.7587538593560265);
+const targetBoardPosition = new THREE.Vector3(-1.4046725555142923, 5.587512942935852, 0.7441562290266093);
+
+
 //set start position Camera Position: x:12.19, y:6.97, z:9.10 | Target: x:0.09, y:2.78, z:0.08
 const originalCameraPosition = new THREE.Vector3(12.19, 6.97, 9.10);
 const originalTargetPosition = new THREE.Vector3(0.09, 2.78, 0.08);
@@ -396,7 +466,7 @@ function OnMouseMove(event) {
 
 function OnClick() {
   const intersections = performRaycast(camera);
-  handleClickEvents(intersections, interactiveObjects, handleObjectClick);
+  handleClickEvents(intersections, buttonObjects, handleObjectClick);
 }
 
 // Handle different types of object clicks
@@ -408,6 +478,12 @@ function handleObjectClick(interactiveObject) {
   switch (interactiveObject.action) {
     case "openNotebook":
       OpenNoteBook(notebookObject);
+      break;
+    case "zoomToAboutMe":
+      zoomCameraToResume();
+      break;
+    case "zoomToBoard":
+      zoomCameraToBoard();
       break;
 
     case "showModal":
@@ -432,29 +508,13 @@ function handleObjectClick(interactiveObject) {
   }
 }
 
-// Helper function to add new interactive objects dynamically
-function addInteractiveObject(name, modalName, action = "showModal") {
-  const newObject = {
-    name: name,
-    object: null,
-    modal: modalName,
-    action: action
-  };
 
-  interactiveObjects.push(newObject);
-  console.log(`Added new interactive object: ${name}`);
-  return newObject;
-}
 
-// Helper function to get all loaded interactive objects
-function getLoadedInteractiveObjects() {
-  return interactiveObjects.filter(obj => obj.object !== null);
-}
 
 // Helper function to log all interactive objects status
 function logInteractiveObjectsStatus() {
   console.log("Interactive Objects Status:");
-  interactiveObjects.forEach(obj => {
+  buttonObjects.forEach(obj => {
     console.log(`- ${obj.name}: ${obj.object ? 'Loaded' : 'Not Found'} (Modal: ${obj.modal}, Action: ${obj.action})`);
   });
 }
@@ -469,6 +529,7 @@ const Update = () => {
   // Always continue the animation loop
   
   window.requestAnimationFrame(Update);
+
   if (isModalOpen()) {
     // Still render the scene but skip interactions when modal is open
     renderer.render(scene, camera);
@@ -485,15 +546,15 @@ const Update = () => {
  
 }
 
-function OpenNoteBook(object) {
-  gsap.to(object.rotation, {
+function OpenNoteBook() {
+  gsap.to(notebookObject.rotation, {
     x: Math.PI,
     y: 0,
     z: 0,
     duration: 0.5,
     ease: 'power2.inOut',
     onComplete: function () {
-      interactiveObjects.forEach(interactiveObj => {
+      buttonObjects.forEach(interactiveObj => {
         if (interactiveObj.name.includes("WorkButton_")) {
           gsap.killTweensOf(interactiveObj.object.scale);
           interactiveObj.object.scale.set(0, 0, 0);
@@ -509,16 +570,26 @@ function OpenNoteBook(object) {
       })
     },
   })
-  zoomCameraTo(object);
+  zoomCameraToNoteBook();
 }
-function CloseNoteBook(object) {
-  interactiveObjects.forEach(interactiveObj => {
-    if (interactiveObj.name.includes("WorkButton_")) {
+
+function CloseNoteBook() {
+  // Only proceed if we have the notebook object
+  if (!notebookObject) {
+    console.log('Notebook object not yet loaded');
+    return;
+  }
+
+  // Hide work buttons
+  buttonObjects.forEach(interactiveObj => {
+    if (interactiveObj.name.includes("WorkButton_") ) {
       gsap.killTweensOf(interactiveObj.object.scale);
       interactiveObj.object.scale.set(0, 0, 0);
     }
-  })
-  gsap.to(object.rotation, {
+  });
+
+  // Rotate notebook back
+  gsap.to(notebookObject.rotation, {
     x: 0,
     y: 0,
     z: 0,
@@ -546,7 +617,7 @@ function resetCameraPosition() {
     ease: 'power2.inOut'
   });
 }
-function zoomCameraTo() {
+function zoomCameraToNoteBook() {
   gsap.to(camera.position, {
     x: cameraNotebookPosition.x,
     y: cameraNotebookPosition.y,
@@ -558,6 +629,38 @@ function zoomCameraTo() {
     x: targetNotebookPosition.x,
     y: targetNotebookPosition.y,
     z: targetNotebookPosition.z,
+    duration: 0.5,
+    ease: 'power2.inOut'
+  })
+}
+function zoomCameraToResume() {
+  gsap.to(camera.position, {
+    x: cameraResumePosition.x,
+    y: cameraResumePosition.y,
+    z: cameraResumePosition.z,
+    duration: 0.5,
+    ease: 'power2.inOut'
+  })
+  gsap.to(controls.target, {
+    x: targetResumePosition.x,
+    y: targetResumePosition.y,
+    z: targetResumePosition.z,
+    duration: 0.5,
+    ease: 'power2.inOut'
+  })
+}
+function zoomCameraToBoard() {
+  gsap.to(camera.position, {
+    x: cameraBoardPosition.x,
+    y: cameraBoardPosition.y,
+    z: cameraBoardPosition.z,
+    duration: 0.5,
+    ease: 'power2.inOut'
+  })
+  gsap.to(controls.target, {
+    x: targetBoardPosition.x,
+    y: targetBoardPosition.y,
+    z: targetBoardPosition.z,
     duration: 0.5,
     ease: 'power2.inOut'
   })
