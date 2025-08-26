@@ -75,8 +75,8 @@ const buttonObjects = [
   {
     name: "Other_Button",
     object: null,
-    modal: "other",
-    action: "zoomToBoard"
+    modal: "gallery",
+    action: "showModal"
   },
   {
     name: "WorkButton_1",

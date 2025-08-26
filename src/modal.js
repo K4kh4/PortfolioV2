@@ -337,7 +337,8 @@ export function initializeModals() {
     work5: document.querySelector('.modal.work5'),
     about: document.querySelector('.modal.about'),
     contact: document.querySelector('.modal.contact'),
-    enter: document.querySelector('.modal.enter')
+    enter: document.querySelector('.modal.enter'),
+    gallery: document.querySelector('.modal.gallery')
   };
 
   // Modal exit button listeners
