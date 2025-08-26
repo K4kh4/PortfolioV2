@@ -57,7 +57,7 @@ function updateFloatingImages() {
   const elapsed = (currentTime - startTime) / 1000; // Time in seconds
   
   floatingImages.forEach((image, index) => {
-    const speed = parseFloat(image.dataset.speed) || 1;
+    const speed = parseFloat(image.dataset.speed-0.1) || 1;
     
     // Mouse movement parallax
     const moveX = (mouseX - 0.5) * speed * 50; // Max 50px movement
