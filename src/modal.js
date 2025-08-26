@@ -478,12 +478,12 @@ export function toggleDarkMode() {
   if (isDarkMode) {
     // Switch to dark mode
     document.body.style.filter = 'none';
-    darkModeButton.textContent = '🌙';
+    darkModeButton.innerHTML = '<img src="https://img.icons8.com/ios-filled/24/000000/light-off.png" alt="Theme Toggle" />';
     console.log('🌙 Switched to dark mode');
   } else {
     // Switch to light mode
     document.body.style.filter = 'invert(1) hue-rotate(180deg)';
-    darkModeButton.textContent = '☀️';
+    darkModeButton.innerHTML = '<img src="https://img.icons8.com/ios-filled/24/000000/light-on.png" alt="Theme Toggle" />';
     console.log('☀️ Switched to light mode');
   }
 }
@@ -512,7 +512,7 @@ export function initializeDarkModeButton() {
   
   if (darkModeButton) {
     // Set initial state
-    darkModeButton.textContent = isDarkMode ? '🌙' : '☀️';
+    darkModeButton.innerHTML = isDarkMode ?'<img src="https://img.icons8.com/ios-filled/24/000000/light-off.png" alt="Theme Toggle" />' : '<img src="https://img.icons8.com/ios-filled/24/000000/light-on.png" alt="Theme Toggle" />';
     
     darkModeButton.addEventListener('click', () => {
       console.log('🌙/☀️ Dark mode button clicked - toggling mode');

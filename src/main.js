@@ -87,7 +87,7 @@ const buttonObjects = [
   {
     name: "WorkButton_2",
     object: null,
-    modal: "work2",
+    modal: "work5",
     action: "showModal"
   },
   {
@@ -105,7 +105,7 @@ const buttonObjects = [
   {
     name: "WorkButton_5",
     object: null,
-    modal: "work5",
+    modal: "work2",
     action: "showModal"
   },
   {
@@ -378,6 +378,8 @@ loader.load("/models/Room_V1-Compresed.glb", (gltf) => {
       if (child.name.includes("Fourth")) {
         const material = new THREE.MeshBasicMaterial()
         material.map = loadedTexture.Fourth.day
+        material.transparent = true;
+        material.alphaTest = 0.5;
         child.material = material
       }
       if (child.name.includes("Fifth")) {
@@ -593,9 +595,22 @@ window.addEventListener("click", OnClick);
 /**
  * Main animation loop - handles rendering and interactions
  */
+let isNotebookOpen = false;
 const Update = () => {
   // Always continue the animation loop
   window.requestAnimationFrame(Update);
+
+  //check distance between camera and notebook if  its greater than 3  its open  close the notebook and open the resume 
+
+  const distance = controls.target.distanceTo(targetNotebookPosition);
+  const distance2 = camera.position.distanceTo(cameraNotebookPosition);
+  if (distance > (3) && isNotebookOpen) {
+    console.log("closing notebook");
+    CloseNoteBook();
+  }
+  if (distance2 > 5 && isNotebookOpen) {
+    CloseNoteBook();
+  }
 
   // Always update camera controls - users should be able to move camera even when modal is open
   controls.update();
@@ -639,6 +654,9 @@ function OpenNoteBook() {
             z: interactiveObj.object.userData.initialScale.z,
             duration: 0.1,
             ease: 'power2.inOut',
+            onComplete: function () {
+              isNotebookOpen = true;
+            }
           })
         }
       })
@@ -651,6 +669,7 @@ function OpenNoteBook() {
  * Closes the notebook and hides work buttons
  */
 function CloseNoteBook() {
+  isNotebookOpen = false;
   // Only proceed if we have the notebook object
   if (!notebookObject) {
     console.log('Notebook object not yet loaded');
@@ -707,7 +726,7 @@ function zoomCameraToNoteBook() {
     y: cameraNotebookPosition.y,
     z: cameraNotebookPosition.z,
     duration: 0.5,
-    ease: 'power2.inOut'
+    ease: 'power2.out'
   })
   gsap.to(controls.target, {
     x: targetNotebookPosition.x,
