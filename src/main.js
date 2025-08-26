@@ -30,20 +30,40 @@ import {
   hideModal,
   navigateWork,
   initializeModals,
-  testModal,
-  checkModalStates,
-  checkFloatingEffects
+  showEnterModal,
+  closeEnterModal,
+  hideLoadingModal,
+  initializeHomeButton,
+  showHomeButton,
+  hideHomeButton,
+  initializeDarkModeButton,
+  showDarkModeButton,
+  hideDarkModeButton,
+  toggleDarkMode,
+  showUIControls,
+  hideUIControls
 } from './modal.js';
 
-//notebook
+// =============================================================================
+// GLOBAL VARIABLES
+// =============================================================================
+
+// Reference to the 3D notebook object that opens to show work buttons
 let notebookObject;
 
-// Interactive objects list - each object has a 3D object reference and corresponding modal
+/**
+ * Interactive objects configuration - maps 3D objects to their corresponding actions and modals
+ * Each object has:
+ * - name: 3D object name to match against
+ * - object: Will be populated with actual 3D object reference when model loads
+ * - modal: CSS class of modal to open (if applicable)
+ * - action: What happens when clicked (openNotebook, zoomToAboutMe, zoomToBoard, showModal)
+ */
 const buttonObjects = [
   {
     name: "MyWork_Button",
     object: null, // Will be set when loading the model
-    modal: "work1",
+    modal: "",
     action: "openNotebook" // Special action for this button
   },
   {
@@ -97,57 +117,82 @@ const buttonObjects = [
   {
     name: "ResumeButton",
     object: null,
-    modal: "about",
+    modal: "",
     action: "zoomToResume"
   }
 ];
 
-//
-
+// =============================================================================
+// INITIALIZATION AND STARTUP
+// =============================================================================
 
 // Modal system initialization and global exports
 document.addEventListener('DOMContentLoaded', () => {
   // Initialize modal system
   initializeModals();
-  
+
+  // Initialize home button with camera reset functionality
+  initializeHomeButton(resetCameraPosition);
+
+  // Initialize dark mode button
+  initializeDarkModeButton();
+
   // Start loading messages
   startLoadingMessages();
 });
 
-// Make functions globally available for any remaining inline handlers
+// Make essential functions globally available for console debugging
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.navigateWork = navigateWork;
-window.testModal = testModal;
-window.checkModalStates = checkModalStates;
-window.checkFloatingEffects = checkFloatingEffects;
+window.showEnterModal = showEnterModal;
+window.closeEnterModal = closeEnterModal;
+window.hideLoadingModal = hideLoadingModal;
+window.showHomeButton = showHomeButton;
+window.hideHomeButton = hideHomeButton;
+window.showDarkModeButton = showDarkModeButton;
+window.hideDarkModeButton = hideDarkModeButton;
+window.toggleDarkMode = toggleDarkMode;
+// window.showUIControls = showUIControls;
+window.hideUIControls = hideUIControls;
 
-// Function to manually reset notebook and camera (if needed later)
+// Debug function to check modal state
+window.debugModalState = () => {
+  console.log('=== MODAL STATE DEBUG ===');
+  console.log('ModalOpen:', isModalOpen());
+  console.log('Active modals:', document.querySelectorAll('.modal.active'));
+  console.log('Visible modals:', Array.from(document.querySelectorAll('.modal')).filter(m => m.style.display !== 'none'));
+  console.log('==========================');
+};
+
+// Global function to manually reset notebook and camera to original position
 window.resetNotebookView = () => {
-  console.log('Resetting notebook and camera to original position');
+  console.log('🏠 Resetting notebook and camera to original position');
   if (notebookObject) {
     CloseNoteBook();
   }
 };
 
-// Make resetNotebookView available globally
-window.CloseNoteBook = CloseNoteBook;
+// =============================================================================
+// THREE.JS SETUP AND CONFIGURATION
+// =============================================================================
 
-//
-
+// Canvas and scene setup
 const canvas = document.querySelector('#experience-canvas')
 const sizes = {
   width: window.innerWidth,
   height: window.innerHeight
 };
 
+// Create Three.js scene and camera
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(45, sizes.width / sizes.height, 0.1, 1000);
 
-//loaders
+// Initialize loaders
 const textureLoader = new THREE.TextureLoader();
 
 
+// Texture configuration - maps room sections to their texture files
 const textureMap = {
   First: {
     day: "/textures/First_Texture_Set_Day_Denoised_Compressed.webp"
@@ -164,34 +209,28 @@ const textureMap = {
   Fifth: {
     day: "/textures/Fifth_Texture_Set_Day_Denoised_Compressed.webp"
   }
-
 };
+
+// Storage for loaded textures - populated during async loading
 const loadedTexture = {
-  First: {
-    day: {}
-  },
-  Second: {
-    day: {}
-  },
-  Third: {
-    day: {}
-  },
-  Fourth: {
-    day: {}
-  },
-  Fifth: {
-    day: {}
-  }
-
+  First: { day: {} },
+  Second: { day: {} },
+  Third: { day: {} },
+  Fourth: { day: {} },
+  Fifth: { day: {} }
 };
 
-// Loading tracker
+// =============================================================================
+// LOADING SYSTEM
+// =============================================================================
+
+// Asset loading state tracking
 let texturesLoaded = 0;
 let modelLoaded = false;
-let objectsAssigned = false;  // Track if all 3D objects are assigned
+let objectsAssigned = false;
 const totalTextures = Object.keys(textureMap).length;
 
-// Loading messages
+// Loading screen messages that cycle while assets load
 const loadingMessages = [
   "Who's there?",
   "Just a sec!",
@@ -208,60 +247,48 @@ let messageInterval;
 function startLoadingMessages() {
   const loadingText = document.getElementById('loading-text');
   if (!loadingText) return;
-  
+
   // Show first message
   loadingText.textContent = loadingMessages[currentMessageIndex];
-  
-  // Cycle through messages every 2 seconds
+
+  // Cycle through messages every 1 seconds
   messageInterval = setInterval(() => {
     currentMessageIndex = (currentMessageIndex + 1) % loadingMessages.length;
     loadingText.textContent = loadingMessages[currentMessageIndex];
-    
+
     // Restart animation
     loadingText.style.animation = 'none';
     loadingText.offsetHeight; // Trigger reflow
     loadingText.style.animation = 'fadeInOut 1.5s ease-in-out';
-  }, 2000);
+  }, 760);
 }
 
-/**
- * Hide the loading modal with animation
- */
-function hideLoadingModal() {
-  const loadingModal = document.getElementById('loading-modal');
-  if (!loadingModal) return;
-  
-  // Clear message interval
-  if (messageInterval) {
-    clearInterval(messageInterval);
-  }
-  
-  // Fade out the loading modal
-  loadingModal.style.transition = 'opacity 0.5s ease-out';
-  loadingModal.style.opacity = '0';
-  
-  setTimeout(() => {
-    loadingModal.style.display = 'none';
-  }, 500);
-}
+
+
+
 
 /**
  * Called when all assets are loaded
  */
 function onLoadComplete() {
   console.log('🎉 All assets loaded and objects ready!');
-  
-  // Hide loading modal
-  hideLoadingModal();
-  
+
+  // Hide loading modal and show enter modal
+  hideLoadingModal(messageInterval);
+
+  // Show enter modal after loading modal fade out
+
+
+
   // Initialize notebook state
   if (notebookObject) {
     CloseNoteBook(notebookObject);
   }
-  
+
   // Ready for interaction
   console.log('✅ Portfolio ready for interaction!');
-  CloseNoteBook();
+  showEnterModal();
+
 }
 
 /**
@@ -289,7 +316,7 @@ function checkObjectsAssigned() {
 function checkIfComplete() {
   // Check if assets are loaded
   const assetsLoaded = texturesLoaded === totalTextures && modelLoaded;
-  
+
   // Check if objects are assigned
   if (!objectsAssigned) {
     objectsAssigned = checkObjectsAssigned();
@@ -316,22 +343,28 @@ Object.entries(textureMap).forEach(([key, value]) => {
   loadedTexture[key].day = dayTexture;
 });
 
-//model loader
+// =============================================================================
+// MODEL LOADING AND SCENE SETUP
+// =============================================================================
+
+// Configure DRACO compression loader for efficient model loading
 const dracoLoader = new DRACOLoader();
 dracoLoader.setDecoderPath('/draco/');
 
+// Configure GLTF loader with DRACO support
 const loader = new GLTFLoader();
 loader.setDRACOLoader(dracoLoader);
+// Load the main 3D model and configure all its components
 loader.load("/models/Room_V1-Compresed.glb", (gltf) => {
   gltf.scene.traverse((child) => {
     if (child.isMesh) {
-      // setting up textures
+      // Apply appropriate textures to different room sections
       if (child.name.includes("First_")) {
         const material = new THREE.MeshBasicMaterial()
         material.map = loadedTexture.First.day
         child.material = material
       }
-    
+
       if (child.name.includes("Second_Room")) {//change the fucking name
         const material = new THREE.MeshBasicMaterial()
         material.map = loadedTexture.Second.day
@@ -352,13 +385,13 @@ loader.load("/models/Room_V1-Compresed.glb", (gltf) => {
         material.map = loadedTexture.Fifth.day
         child.material = material
       }
-     
+
       if (child.material.map) {
         child.material.map.minFilter = THREE.LinearFilter;
       }
       // setting up layers 
 
-      
+
       if (child.name.includes("Raycaster")) {
         raycastObjects.push(child);
       }
@@ -383,24 +416,24 @@ loader.load("/models/Room_V1-Compresed.glb", (gltf) => {
     }
   })
   scene.add(gltf.scene)
-//add ambient light with light blue tint
+  //add ambient light with light blue tint
 
 
 
 
   // Log which interactive objects were found
   logInteractiveObjectsStatus();
-  
+
   // Create static hitboxes for all interactive objects after model loads
   createAllHitboxes(scene);
-  
+
   // Log interactive objects status
   logInteractiveObjectsStatus();
-  
+
   // Mark model as loaded and check completion
   modelLoaded = true;
   console.log('🏠 3D Model loaded successfully!');
-  
+
   // Check completion multiple times to ensure objects are assigned
   const checkInterval = setInterval(() => {
     checkIfComplete();
@@ -409,36 +442,34 @@ loader.load("/models/Room_V1-Compresed.glb", (gltf) => {
     }
   }, 100);
 })
-//model loader end
 
+// =============================================================================
+// RENDERER AND CAMERA SETUP
+// =============================================================================
 
-
-
-//renderer
+// Configure WebGL renderer with antialiasing for smooth visuals
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
   antialias: true
 });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-// average position for notebook
+// =============================================================================
+// CAMERA POSITIONS AND CONTROLS
+// =============================================================================
+
+// Predefined camera positions for different views
 const cameraNotebookPosition = new THREE.Vector3(1.0116149200302174, 6.571313242426443, -0.8049478528131928);
 const targetNotebookPosition = new THREE.Vector3(-1.0674379059115109, 4.033968206624388, -0.790316383561921);
 
-
-
-
-
 const cameraResumePosition = new THREE.Vector3(1.3, 4.8, -0.7);
 const targetResumePosition = new THREE.Vector3(1.2, 3.8, -2.1);
-
-
 
 const cameraBoardPosition = new THREE.Vector3(-0.3770576922642992, 5.700365453619895, 0.7587538593560265);
 const targetBoardPosition = new THREE.Vector3(-1.4046725555142923, 5.587512942935852, 0.7441562290266093);
 
 
-//set start position Camera Position: x:12.19, y:6.97, z:9.10 | Target: x:0.09, y:2.78, z:0.08
+// Initial camera position - wide view of the entire room
 const originalCameraPosition = new THREE.Vector3(12.19, 6.97, 9.10);
 const originalTargetPosition = new THREE.Vector3(0.09, 2.78, 0.08);
 
@@ -450,7 +481,13 @@ controls.enablePan = true
 controls.dampingFactor = 0.5
 controls.target.copy(originalTargetPosition);
 
-//event functions
+// =============================================================================
+// EVENT HANDLERS
+// =============================================================================
+
+/**
+ * Handle window resize events - updates camera and renderer
+ */
 function OnResize() {
   sizes.width = window.innerWidth;
   sizes.height = window.innerHeight;
@@ -460,52 +497,76 @@ function OnResize() {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 }
 
+/**
+ * Handle mouse movement for raycasting
+ * @param {MouseEvent} event - Mouse move event
+ */
 function OnMouseMove(event) {
   updatePointer(event);
 }
 
+/**
+ * Handle click events on 3D objects
+ */
 function OnClick() {
+  // Prevent scene interactions when modal is open
+  if (isModalOpen()) {
+    console.log('🚫 Click blocked - modal is open');
+    return;
+  }
+
+  console.log('🎯 Processing scene click');
   const intersections = performRaycast(camera);
-  handleClickEvents(intersections, buttonObjects, handleObjectClick);
+  if (intersections.length > 0) {
+    handleClickEvents(intersections, buttonObjects, handleObjectClick);
+  }
 }
 
 // Handle different types of object clicks
 function handleObjectClick(interactiveObject) {
-  console.log(`Clicked on: ${interactiveObject.name}`);
-  console.log(`Modal: ${interactiveObject.modal}`);
-  console.log(`Action: ${interactiveObject.action}`);
+  console.log('🎯 === OBJECT CLICK EVENT ===');
+  console.log(`🎯 Clicked on: ${interactiveObject.name}`);
+  console.log(`🎯 Modal: ${interactiveObject.modal}`);
+  console.log(`🎯 Action: ${interactiveObject.action}`);
+  console.log(`🎯 Object data:`, interactiveObject);
 
   switch (interactiveObject.action) {
     case "openNotebook":
+      console.log('🎯 Executing: openNotebook');
       OpenNoteBook(notebookObject);
       break;
     case "zoomToAboutMe":
+      console.log('🎯 Executing: zoomToAboutMe');
       zoomCameraToResume();
       break;
     case "zoomToBoard":
+      console.log('🎯 Executing: zoomToBoard');
       zoomCameraToBoard();
       break;
 
     case "showModal":
+      console.log('🎯 Executing: showModal');
       if (interactiveObject.modal) {
         // Use direct modal class name instead of cached references
-        console.log(`Attempting to open modal: ${interactiveObject.modal}`);
+        console.log(`🎯 Attempting to open modal: ${interactiveObject.modal}`);
         const modalElement = document.querySelector(`.modal.${interactiveObject.modal}`);
-        console.log(`Found modal element:`, modalElement);
+        console.log(`🎯 Found modal element:`, modalElement);
 
         if (modalElement) {
+          console.log('🎯 Modal element found, calling openModal');
           openModal(interactiveObject.modal);
         } else {
-          console.error(`Modal element not found for: ${interactiveObject.modal}`);
+          console.error(`🚫 Modal element not found for: ${interactiveObject.modal}`);
         }
       } else {
-        console.error('No modal specified for interactive object');
+        console.error('🚫 No modal specified for interactive object');
       }
       break;
 
     default:
-      console.warn(`Unknown action: ${interactiveObject.action}`);
+      console.warn(`⚠️ Unknown action: ${interactiveObject.action}`);
   }
+  console.log('🎯 === END OBJECT CLICK EVENT ===');
 }
 
 
@@ -520,32 +581,45 @@ function logInteractiveObjectsStatus() {
 }
 
 
-//event listeners
+// =============================================================================
+// EVENT LISTENERS AND MAIN LOOP
+// =============================================================================
+
+// Register event listeners
 window.addEventListener("mousemove", (e) => { OnMouseMove(e); })
 window.addEventListener("resize", OnResize);
 window.addEventListener("click", OnClick);
-// update loop
+
+/**
+ * Main animation loop - handles rendering and interactions
+ */
 const Update = () => {
   // Always continue the animation loop
-  
   window.requestAnimationFrame(Update);
 
-  if (isModalOpen()) {
-    // Still render the scene but skip interactions when modal is open
-    renderer.render(scene, camera);
-    return;
-  }
-
+  // Always update camera controls - users should be able to move camera even when modal is open
   controls.update();
   renderer.render(scene, camera);
-  
-  // Perform raycasting and handle interactions
-  const intersections = performRaycast(camera);
-  const intersectionData = handleHoverEffects(intersections, OnHover);
-  handleCursorChanges(intersectionData);
- 
+
+  // Only perform raycasting and interactions when no modal is open
+  if (!isModalOpen()) {
+    // Perform raycasting and handle interactions
+    const intersections = performRaycast(camera);
+    const intersectionData = handleHoverEffects(intersections, OnHover);
+    handleCursorChanges(intersectionData);
+  } else {
+    // Reset cursor when modal is open to prevent hover cursor from sticking
+    document.body.style.cursor = "default";
+  }
 }
 
+// =============================================================================
+// CAMERA ANIMATION FUNCTIONS
+// =============================================================================
+
+/**
+ * Opens the notebook with animation and shows work buttons
+ */
 function OpenNoteBook() {
   gsap.to(notebookObject.rotation, {
     x: Math.PI,
@@ -573,6 +647,9 @@ function OpenNoteBook() {
   zoomCameraToNoteBook();
 }
 
+/**
+ * Closes the notebook and hides work buttons
+ */
 function CloseNoteBook() {
   // Only proceed if we have the notebook object
   if (!notebookObject) {
@@ -582,7 +659,7 @@ function CloseNoteBook() {
 
   // Hide work buttons
   buttonObjects.forEach(interactiveObj => {
-    if (interactiveObj.name.includes("WorkButton_") ) {
+    if (interactiveObj.name.includes("WorkButton_")) {
       gsap.killTweensOf(interactiveObj.object.scale);
       interactiveObj.object.scale.set(0, 0, 0);
     }
@@ -598,9 +675,12 @@ function CloseNoteBook() {
   })
 
   // Reset camera to original position
-  resetCameraPosition();
+
 }
 
+/**
+ * Resets camera to the original wide view position
+ */
 function resetCameraPosition() {
   gsap.to(camera.position, {
     x: originalCameraPosition.x,
@@ -616,7 +696,11 @@ function resetCameraPosition() {
     duration: 0.5,
     ease: 'power2.inOut'
   });
+  CloseNoteBook();
 }
+/**
+ * Animates camera to focus on the notebook
+ */
 function zoomCameraToNoteBook() {
   gsap.to(camera.position, {
     x: cameraNotebookPosition.x,
@@ -669,12 +753,15 @@ function OnHover(object, isHovering) {
   gsap.killTweensOf(object.scale);
   gsap.killTweensOf(object.rotation);
   gsap.killTweensOf(object.position);
-  let scalePercentage=1.2
+  if (object.scale.x < 0.01) {
+    return;
+  }
+  let scalePercentage = 1.2
   if (isHovering) {
-    
-   
+
+
     gsap.to(object.scale, {
-      x:  object.userData.initialScale.x * scalePercentage,
+      x: object.userData.initialScale.x * scalePercentage,
       y: object.userData.initialScale.y * scalePercentage,
       z: object.userData.initialScale.z * scalePercentage,
       duration: 0.1,

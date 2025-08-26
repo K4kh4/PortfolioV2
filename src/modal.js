@@ -1,16 +1,31 @@
 import gsap from 'gsap';
 
-// Modal state
+// =============================================================================
+// MODAL SYSTEM STATE AND CONFIGURATION
+// =============================================================================
+
+// Global modal state
 export let ModalOpen = false;
 
-// Modal navigation state
+// Home button reference
+let homeButton = null;
+
+// Dark mode button reference and state
+let darkModeButton = null;
+let isDarkMode = true; // Start in dark mode
+
+// Modal navigation state for work modals
 let currentWork = 1;
 const totalWorks = 5;
 
-// Modal references - initialized after DOM loads
+// Modal DOM references - populated during initialization
 let Modals = {};
 
-// Mouse movement tracking for parallax effects
+// =============================================================================
+// FLOATING ANIMATION SYSTEM (for About modal)
+// =============================================================================
+
+// Mouse position tracking for parallax effects
 let mouseX = 0;
 let mouseY = 0;
 let aboutModal = null;
@@ -89,6 +104,10 @@ function startFloatingAnimation() {
   animationId = requestAnimationFrame(animateFrame);
 }
 
+// =============================================================================
+// MODAL STATE MANAGEMENT
+// =============================================================================
+
 /**
  * Get current modal open state
  * @returns {boolean} - Whether a modal is currently open
@@ -104,6 +123,10 @@ export function isModalOpen() {
 export function setModalOpen(state) {
   ModalOpen = state;
 }
+
+// =============================================================================
+// CORE MODAL FUNCTIONS
+// =============================================================================
 
 /**
  * Open a modal with animation
@@ -134,6 +157,9 @@ export const openModal = (modalClass) => {
     ModalOpen = true;
     modal.classList.add('active');
     document.body.style.overflow = 'hidden'; // Prevent body scroll
+    
+    // Hide UI controls when modal opens
+    hideUIControls();
 
     // Update current work index if it's a work modal
     if (modal.classList.contains('work1')) currentWork = 1;
@@ -189,45 +215,11 @@ export const openModal = (modalClass) => {
 /**
  * Close the currently active modal with animation
  */
-export const closeModal = (navigate = false, direction = 1) => {
+export const closeModal = (navigate = false, direction = 1, onComplete = null) => {
   const activeModal = document.querySelector('.modal.active');
   if (activeModal) {
-
-    if (navigate) {
-      //if navigate is tro modelas animation should be sliding isnted of scale
-      gsap.to(activeModal, {
-        x: direction * 100,
-        duration: 0.5,
-        ease: "back.in(1.7)",
-        onComplete: () => {
-          activeModal.classList.remove('active');
-          // Clear any GSAP properties that might interfere
-          gsap.set(activeModal, { clearProps: "all" });
-          activeModal.style.display = 'none';
-          activeModal.style.opacity = '';
-          document.body.style.overflow = 'auto'; // Restore body scroll
+    console.log('🔄 Closing modal:', activeModal.className);
   
-          // DON'T reset notebook and camera - keep them as they are
-          // Users can continue clicking work buttons without reopening notebook
-  
-          // Reset modal state AFTER all animations are complete
-          ModalOpen = false;
-          
-          // Remove mouse movement listener and stop animation if about modal is closed
-          if (activeModal.classList.contains('about')) {
-            document.removeEventListener('mousemove', handleMouseMove);
-            if (animationId) {
-              cancelAnimationFrame(animationId);
-              animationId = null;
-            }
-            aboutModal = null;
-          }
-          
-          console.log('Modal closed - notebook and camera remain positioned');
-        }
-      });
-      return;
-    }
     gsap.to(activeModal, {
       opacity: 0,
       scale: 0,
@@ -247,6 +239,9 @@ export const closeModal = (navigate = false, direction = 1) => {
         // Reset modal state AFTER all animations are complete
         ModalOpen = false;
         
+        // Show UI controls when modal closes
+        showUIControls();
+        
         // Remove mouse movement listener and stop animation if about modal is closed
         if (activeModal.classList.contains('about')) {
           document.removeEventListener('mousemove', handleMouseMove);
@@ -257,12 +252,23 @@ export const closeModal = (navigate = false, direction = 1) => {
           aboutModal = null;
         }
         
-        console.log('Modal closed - notebook and camera remain positioned');
+        console.log('🔄 Modal closed - notebook and camera remain positioned');
+        
+        // Call the completion callback if provided
+        if (onComplete && typeof onComplete === 'function') {
+          onComplete();
+        }
       }
     });
   } else {
     // If no active modal, just reset the state
     ModalOpen = false;
+    // Show UI controls when no modal is active
+    showUIControls();
+    // Still call the callback if provided
+    if (onComplete && typeof onComplete === 'function') {
+      onComplete();
+    }
   }
 }
 
@@ -291,20 +297,31 @@ export const hideModal = (modal) => {
  * @param {string} direction - 'next' or 'prev'
  */
 export const navigateWork = (direction) => {
+  console.log(`🔄 NavigateWork called with direction: ${direction}`);
+  console.log(`🔄 Current work: ${currentWork}, Total works: ${totalWorks}`);
+  
   let newWork;
 
   if (direction === 'next') {
+    console.log('🔄 Navigating to next work');
     newWork = currentWork < totalWorks ? currentWork + 1 : 1;
   } else {
+    console.log('🔄 Navigating to previous work');
     newWork = currentWork > 1 ? currentWork - 1 : totalWorks;
   }
 
+  console.log(`🔄 New work will be: ${newWork}`);
+
   // Close current modal and open new one
-  closeModal(true, direction === 'next' ? 1 : -1);
-  setTimeout(() => {
+  closeModal(true, direction === 'next' ? 1 : -1, () => {
+    console.log(`🔄 Opening modal: work${newWork}`);
     openModal('work' + newWork);
-  }, 100);
+  });
 }
+
+// =============================================================================
+// MODAL SYSTEM INITIALIZATION
+// =============================================================================
 
 /**
  * Initialize modal system and event listeners
@@ -319,7 +336,8 @@ export function initializeModals() {
     work4: document.querySelector('.modal.work4'),
     work5: document.querySelector('.modal.work5'),
     about: document.querySelector('.modal.about'),
-    contact: document.querySelector('.modal.contact')
+    contact: document.querySelector('.modal.contact'),
+    enter: document.querySelector('.modal.enter')
   };
 
   // Modal exit button listeners
@@ -334,7 +352,9 @@ export function initializeModals() {
   document.querySelectorAll('.nav-arrow').forEach(button => {
     button.addEventListener('click', (e) => {
       e.stopPropagation();
+      console.log('🔄 Navigation arrow clicked:', button.textContent.trim());
       const direction = button.textContent.trim() === '←' ? 'prev' : 'next';
+      console.log('🔄 Direction determined:', direction);
       navigateWork(direction);
     });
   });
@@ -363,54 +383,164 @@ export function initializeModals() {
   console.log('Modal system initialized');
 }
 
-/**
- * Test function to open modals from console
- * @param {number} workNumber - Work number to test (1-5)
- */
-export const testModal = (workNumber) => {
-  console.log(`Testing modal work${workNumber}`);
-  openModal(`work${workNumber}`);
-};
+// =============================================================================
+// LOADING MODAL SYSTEM
+// =============================================================================
 
 /**
- * Debug function to check modal states
+ * Hide the loading modal with animation
+ * @param {number} messageInterval - Optional message interval to clear
  */
-export const checkModalStates = () => {
-  console.log('Current modal states:');
-  for (let i = 1; i <= 5; i++) {
-    const modal = document.querySelector(`.modal.work${i}`);
-    if (modal) {
-      console.log(`work${i}:`, {
-        display: modal.style.display,
-        opacity: modal.style.opacity,
-        hasActive: modal.classList.contains('active'),
-        computedDisplay: window.getComputedStyle(modal).display,
-        computedOpacity: window.getComputedStyle(modal).opacity
-      });
-    }
+export function hideLoadingModal(messageInterval = null) {
+  const loadingModal = document.getElementById('loading-modal');
+  if (!loadingModal) {
+    console.error('Loading modal element not found');
+    return;
   }
-};
-
-/**
- * Debug function to check floating effects
- */
-const checkFloatingEffects = () => {
-  console.log('Floating effects debug:');
-  console.log('About modal:', aboutModal);
-  console.log('Animation ID:', animationId);
-  console.log('Mouse position:', { mouseX, mouseY });
   
-  if (aboutModal) {
-    const floatingImages = aboutModal.querySelectorAll('.floating-image');
-    console.log('Floating images found:', floatingImages.length);
-    floatingImages.forEach((img, index) => {
-      console.log(`Image ${index}:`, {
-        speed: img.dataset.speed,
-        transform: img.style.transform
-      });
-    });
+  console.log('🔄 Hiding loading modal');
+  
+  // Clear message interval if provided
+  if (messageInterval) {
+    clearInterval(messageInterval);
   }
-};
+  
+  // Fade out the loading modal
+  loadingModal.style.opacity = '0';
+  loadingModal.style.display = 'none';
+
+}
+
+// =============================================================================
+// ENTER MODAL SYSTEM
+// =============================================================================
+
+/**
+ * Show the enter modal with animation
+ */
+export function showEnterModal() {
+  // Quick modal system initialization (workaround)
+  openModal("about");
+  openModal("enter");
+ 
+}
+export function closeEnterModal() {
+  closeModal();
+}
+
+// =============================================================================
+// UI CONTROLS SYSTEM (HOME BUTTON & DARK MODE)
+// =============================================================================
+
+/**
+ * Show the home button
+ */
+export function showHomeButton() {
+  if (homeButton) {
+    homeButton.classList.add('visible');
+  }
+}
+
+/**
+ * Hide the home button
+ */
+export function hideHomeButton() {
+  if (homeButton) {
+    homeButton.classList.remove('visible');
+  }
+}
+
+/**
+ * Show the dark mode button
+ */
+export function showDarkModeButton() {
+  if (darkModeButton) {
+    darkModeButton.classList.add('visible');
+  }
+}
+
+/**
+ * Hide the dark mode button
+ */
+export function hideDarkModeButton() {
+  if (darkModeButton) {
+    darkModeButton.classList.remove('visible');
+  }
+}
+
+/**
+ * Toggle dark mode
+ */
+export function toggleDarkMode() {
+  isDarkMode = !isDarkMode;
+  
+  if (isDarkMode) {
+    // Switch to dark mode
+    document.body.style.filter = 'none';
+    darkModeButton.textContent = '🌙';
+    console.log('🌙 Switched to dark mode');
+  } else {
+    // Switch to light mode
+    document.body.style.filter = 'invert(1) hue-rotate(180deg)';
+    darkModeButton.textContent = '☀️';
+    console.log('☀️ Switched to light mode');
+  }
+}
+
+/**
+ * Initialize home button functionality
+ */
+export function initializeHomeButton(resetCameraFunction) {
+  homeButton = document.getElementById('home-button');
+  
+  if (homeButton) {
+    homeButton.addEventListener('click', () => {
+      console.log('🏠 Home button clicked - resetting camera');
+      resetCameraFunction();
+    });
+    hideHomeButton();
+     
+  }
+}
+
+/**
+ * Initialize dark mode button functionality
+ */
+export function initializeDarkModeButton() {
+  darkModeButton = document.getElementById('dark-mode-button');
+  
+  if (darkModeButton) {
+    // Set initial state
+    darkModeButton.textContent = isDarkMode ? '🌙' : '☀️';
+    
+    darkModeButton.addEventListener('click', () => {
+      console.log('🌙/☀️ Dark mode button clicked - toggling mode');
+      toggleDarkMode();
+    });
+    
+    console.log('Dark mode button initialized');
+  }
+}
+
+/**
+ * Show all UI controls
+ */
+export function showUIControls() {
+  showHomeButton();
+  showDarkModeButton();
+}
+
+/**
+ * Hide all UI controls
+ */
+export function hideUIControls() {
+  hideHomeButton();
+  hideDarkModeButton();
+}
+
+// =============================================================================
+// UTILITY FUNCTIONS
+// =============================================================================
 
 /**
  * Get current work number
@@ -427,6 +557,3 @@ export function getCurrentWork() {
 export function getTotalWorks() {
   return totalWorks;
 }
-
-// Export debug function
-export { checkFloatingEffects };

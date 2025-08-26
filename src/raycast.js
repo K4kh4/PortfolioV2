@@ -1,13 +1,17 @@
 import * as THREE from 'three';
 
-// Raycasting variables
-export const raycastObjects = [];
-export const hitboxObjects = []; // Static hitboxes for reliable raycasting
-export const hitboxToObjectMap = new Map(); // Maps hitbox to original animated object
-export let currentIntersect = [];
-export let currentHoverObject;
+// =============================================================================
+// RAYCASTING SYSTEM FOR 3D OBJECT INTERACTIONS
+// =============================================================================
 
-// Raycaster setup
+// Raycasting object collections
+export const raycastObjects = [];                       // Original raycaster objects from 3D model
+export const hitboxObjects = [];                        // Static hitboxes for reliable clicking  
+export const hitboxToObjectMap = new Map();            // Maps hitbox to original animated object
+export let currentIntersect = [];                       // Current raycast intersections
+export let currentHoverObject;                          // Currently hovered object
+
+// Three.js raycaster setup
 export const raycaster = new THREE.Raycaster();
 export const pointer = new THREE.Vector2();
 
@@ -175,23 +179,42 @@ export function handleCursorChanges(intersectionData) {
  * @param {Function} handleObjectClickCallback - Callback function for object clicks
  */
 export function handleClickEvents(intersections, interactiveObjects, handleObjectClickCallback) {
+  console.log('🎯 === RAYCAST CLICK ANALYSIS ===');
+  console.log(`🎯 Intersections found: ${intersections.length}`);
+  
   if (intersections.length > 0) {
     // Get the hitbox that was clicked
     const hitboxObject = intersections[0].object;
+    console.log(`🎯 Closest hitbox: ${hitboxObject.name}`);
+    
     // Get the original object from the hitbox
     const originalObject = hitboxObject.userData.originalObject;
+    console.log(`🎯 Original object: ${originalObject ? originalObject.name : 'none'}`);
     
     if (originalObject && originalObject.name.includes("Pointer")) {
+      console.log('🎯 Object is a Pointer - checking interactive objects');
+      
       // Check if the clicked object matches any interactive object
-      const clickedInteractiveObject = interactiveObjects.find(interactiveObj =>
-        originalObject.name.includes(interactiveObj.name)
-      );
+      const clickedInteractiveObject = interactiveObjects.find(interactiveObj => {
+        const matches = originalObject.name.includes(interactiveObj.name);
+        console.log(`🎯 Checking ${interactiveObj.name} against ${originalObject.name}: ${matches}`);
+        return matches;
+      });
 
       if (clickedInteractiveObject) {
+        console.log(`🎯 Found matching interactive object: ${clickedInteractiveObject.name}`);
         handleObjectClickCallback(clickedInteractiveObject);
+      } else {
+        console.warn(`⚠️ No matching interactive object found for: ${originalObject.name}`);
+        console.log('🎯 Available interactive objects:', interactiveObjects.map(obj => obj.name));
       }
+    } else {
+      console.log('🎯 Object is not a Pointer or no original object found');
     }
+  } else {
+    console.log('🎯 No intersections found - click missed all objects');
   }
+  console.log('🎯 === END RAYCAST CLICK ANALYSIS ===');
 }
 
 /**
