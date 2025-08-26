@@ -132,11 +132,11 @@ export function setModalOpen(state) {
  * Open a modal with animation
  * @param {string} modalClass - CSS class of the modal to open
  */
-export const openModal = (modalClass) => {
+export const openModal = (modalClass, isNavigating = false) => {
   // Check if any modal is currently open
   const currentActiveModal = document.querySelector('.modal.active');
   const isAnotherModalOpen = currentActiveModal && !currentActiveModal.classList.contains(modalClass);
-
+ 
   // Close any open modals first (but don't wait for animation)
   if (isAnotherModalOpen) {
     currentActiveModal.classList.remove('active');
@@ -200,7 +200,7 @@ export const openModal = (modalClass) => {
       });
       gsap.to(modal, {
         scale: 1,
-        duration: 0.5,
+        duration: (isNavigating) ? 0 : 0.5,
         ease: "back.out(1.7)"
       });
       console.log(`Modal opened with scale animation: ${modalClass}`);
@@ -223,7 +223,7 @@ export const closeModal = (navigate = false, direction = 1, onComplete = null) =
     gsap.to(activeModal, {
       opacity: 0,
       scale: 0,
-      duration: 0.5,
+      duration: (navigate) ? 0 : 0.5,
       ease: "back.in(1.7)",
       onComplete: () => {
         activeModal.classList.remove('active');
@@ -313,10 +313,8 @@ export const navigateWork = (direction) => {
   console.log(`🔄 New work will be: ${newWork}`);
 
   // Close current modal and open new one
-  closeModal(true, direction === 'next' ? 1 : -1, () => {
-    console.log(`🔄 Opening modal: work${newWork}`);
-    openModal('work' + newWork);
-  });
+  closeModal(true, direction === 'next' ? 1 : -1);
+  openModal('work' + newWork, true);
 }
 
 // =============================================================================

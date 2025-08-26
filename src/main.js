@@ -67,13 +67,43 @@ const buttonObjects = [
     action: "openNotebook" // Special action for this button
   },
   {
+    name: "Fourth_notebook_MyWork_Top_Raycaster_Pointer",
+    object: null, // Will be set when loading the model
+    modal: "",
+    action: "openNotebook" // Special action for this button
+  },
+  {
+    name: "MyWork_Sign",
+    object: null, // Will be set when loading the model
+    modal: "",
+    action: "openNotebook" // Special action for this button
+  },
+  {
+    name: "Fifth_Seat_Top_Raycaster_Pointer",
+    object: null, // Will be set when loading the model
+    modal: "",
+    action: "rotateSeat" // Special action for this button
+  },
+  {
     name: "AboutMe_Button",
     object: null,
     modal: "about",
     action: "zoomToAboutMe"
   },
   {
+    name: "AboutMe_Sign",
+    object: null,
+    modal: "about",
+    action: "zoomToAboutMe"
+  },
+  {
     name: "Other_Button",
+    object: null,
+    modal: "gallery",
+    action: "showModal"
+  },
+  {
+    name: "Other_Sign",
     object: null,
     modal: "gallery",
     action: "showModal"
@@ -153,17 +183,10 @@ window.hideHomeButton = hideHomeButton;
 window.showDarkModeButton = showDarkModeButton;
 window.hideDarkModeButton = hideDarkModeButton;
 window.toggleDarkMode = toggleDarkMode;
-// window.showUIControls = showUIControls;
 window.hideUIControls = hideUIControls;
 
 // Debug function to check modal state
-window.debugModalState = () => {
-  console.log('=== MODAL STATE DEBUG ===');
-  console.log('ModalOpen:', isModalOpen());
-  console.log('Active modals:', document.querySelectorAll('.modal.active'));
-  console.log('Visible modals:', Array.from(document.querySelectorAll('.modal')).filter(m => m.style.display !== 'none'));
-  console.log('==========================');
-};
+
 
 // Global function to manually reset notebook and camera to original position
 window.resetNotebookView = () => {
@@ -208,6 +231,9 @@ const textureMap = {
   },
   Fifth: {
     day: "/textures/Fifth_Texture_Set_Day_Denoised_Compressed.webp"
+  },
+  books:{
+    day: "/textures/Books.001.png"
   }
 };
 
@@ -217,7 +243,8 @@ const loadedTexture = {
   Second: { day: {} },
   Third: { day: {} },
   Fourth: { day: {} },
-  Fifth: { day: {} }
+  Fifth: { day: {} },
+  books: { day: {} }
 };
 
 // =============================================================================
@@ -355,7 +382,7 @@ dracoLoader.setDecoderPath('/draco/');
 const loader = new GLTFLoader();
 loader.setDRACOLoader(dracoLoader);
 // Load the main 3D model and configure all its components
-loader.load("/models/Room_V1-Compresed.glb", (gltf) => {
+loader.load("/models/Room_V1-Compresed-v1.glb", (gltf) => {
   gltf.scene.traverse((child) => {
     if (child.isMesh) {
       // Apply appropriate textures to different room sections
@@ -385,6 +412,11 @@ loader.load("/models/Room_V1-Compresed.glb", (gltf) => {
       if (child.name.includes("Fifth")) {
         const material = new THREE.MeshBasicMaterial()
         material.map = loadedTexture.Fifth.day
+        child.material = material
+      }
+      if (child.name.includes("Book")) {
+        const material = new THREE.MeshBasicMaterial()
+        material.map = loadedTexture.books.day
         child.material = material
       }
 
@@ -564,7 +596,10 @@ function handleObjectClick(interactiveObject) {
         console.error('🚫 No modal specified for interactive object');
       }
       break;
-
+    case "rotateSeat":
+      console.log('🎯 Executing: rotateSeat');
+      rotateSeat();
+      break;
     default:
       console.warn(`⚠️ Unknown action: ${interactiveObject.action}`);
   }
@@ -772,10 +807,10 @@ function OnHover(object, isHovering) {
   gsap.killTweensOf(object.scale);
   gsap.killTweensOf(object.rotation);
   gsap.killTweensOf(object.position);
-  if (object.scale.x < 0.01) {
+  if (object.scale.x < 0.00001) {
     return;
   }
-  let scalePercentage = 1.2
+  let scalePercentage = 1.15
   if (isHovering) {
 
 
@@ -783,8 +818,8 @@ function OnHover(object, isHovering) {
       x: object.userData.initialScale.x * scalePercentage,
       y: object.userData.initialScale.y * scalePercentage,
       z: object.userData.initialScale.z * scalePercentage,
-      duration: 0.1,
-      ease: 'power2.inOut',
+      duration: 0.2,
+      ease: 'back.out(3)',
     })
   }
   else {
@@ -792,28 +827,40 @@ function OnHover(object, isHovering) {
       x: object.userData.initialScale.x,
       y: object.userData.initialScale.y,
       z: object.userData.initialScale.z,
-      duration: 0.1,
-      ease: 'power2.inOut',
+      duration: 0.2,
+      ease: 'back.out(3)',
 
     })
     gsap.to(object.rotation, {
       x: object.userData.initialRotation.x,
       y: object.userData.initialRotation.y,
       z: object.userData.initialRotation.z,
-      duration: 0.1,
-      ease: 'power2.inOut',
+      duration: 0.2,
+      ease: 'back.out(3)',
 
     })
     gsap.to(object.position, {
       x: object.userData.initialPosition.x,
       y: object.userData.initialPosition.y,
       z: object.userData.initialPosition.z,
-      duration: 0.1,
-      ease: 'power2.inOut',
+      duration: 0.2,
+      ease: 'back.out(3s)',
     })
   }
 }
-
+//exrea stuff
+function rotateSeat() {
+  const seatObject = buttonObjects.find(obj => obj.name === "Fifth_Seat_Top_Raycaster_Pointer").object;
+  gsap.to(seatObject.rotation, {
+    x: 0,
+    y: seatObject.rotation. y - Math.PI*2,
+    z: 0,
+    duration: 1,
+    ease: 'back.inOut(3)'
+    ,
+   
+  })
+}
 
 //start update loop
 Update();

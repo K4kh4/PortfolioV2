@@ -50,8 +50,9 @@ export function createStaticHitbox(originalObject, scene) {
   hitbox.userData.originalObject = originalObject;
   
   // If this is a Raycaster object, try to find corresponding Hover object
+
   if (originalObject.name.includes("Raycaster")) {
-    const baseName = originalObject.name.replace("_Raycaster_Pointer", "").replace("_Raycaster", "");
+    const baseName = originalObject.name;//.replace("_Raycaster_Pointer", "").replace("_Raycaster", "");
     scene.traverse((child) => {
       if (child.name.includes(baseName) && child.name.includes("Hover")) {
         hitbox.userData.hoverObject = child;
@@ -124,7 +125,7 @@ export function handleHoverEffects(intersections, onHoverCallback) {
     
     // Check if this object should have hover effects
     const hoverTarget = hitboxObject.userData.hoverObject || originalObject;
-    
+    if(hoverTarget.name.includes("Hover3")) return { hoverTarget, originalObject, hitboxObject };
     if (hoverTarget && hoverTarget.name.includes("Hover")) {
      
       if (hoverTarget !== currentHoverObject) {
@@ -161,7 +162,7 @@ export function handleCursorChanges(intersectionData) {
   }
   
   // Check if cursor should be pointer (for any interactive object)
-  if (originalObject && originalObject.name.includes("Pointer")) {
+  if (originalObject && originalObject.name.includes("Pointer") && originalObject.scale.x > 0.00001) {
     document.body.style.cursor = "pointer";
   } else {
     // Only reset hover if we're not over a hoverable object
@@ -186,6 +187,9 @@ export function handleClickEvents(intersections, interactiveObjects, handleObjec
     // Get the hitbox that was clicked
     const hitboxObject = intersections[0].object;
     console.log(`🎯 Closest hitbox: ${hitboxObject.name}`);
+    if (hitboxObject.userData.originalObject.scale.x < 0.00001) {
+      return;
+    }
     
     // Get the original object from the hitbox
     const originalObject = hitboxObject.userData.originalObject;

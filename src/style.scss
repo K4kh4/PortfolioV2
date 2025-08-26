@@ -328,6 +328,17 @@ $bp-xs: 480px;
     height: 150px;
   }
 }
+//books image positioning 
+.floating-image[data-speed="0.3"] {
+  bottom: 10%;
+  right: 10%;
+  opacity: 1;
+  z-index: 5;
+
+  img {
+    height: 150px;
+  }
+}
 
 // Main Layer - Natia's portrait
 .main-layer {
@@ -735,7 +746,7 @@ $bp-xs: 480px;
 
 .masonry-gallery {
   columns: 3;
-  column-gap: 20px;
+  column-gap: auto;
   
   @media (max-width: 992px) {
     columns: 2;
@@ -751,6 +762,7 @@ $bp-xs: 480px;
   break-inside: avoid;
   margin-bottom: 20px;
   border-radius: 12px;
+
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   background: #333;
@@ -787,6 +799,48 @@ $bp-xs: 480px;
   
   &:hover {
     background: #888;
+  }
+}
+.container{
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-gap: 1rem;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.tile img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+  &:hover {
+    transform: scale(1.02);
+
+  }
+}
+
+.tile:nth-child(1){
+  grid-column: span 4;
+  grid-row: span 2;
+}
+
+.tile:nth-child(2),
+.tile:nth-child(3){
+  grid-column: span 2;
+}
+
+.tile:nth-child(4),
+.tile:nth-child(5){
+  grid-column: span 2;
+}
+@media screen and (max-width: 650px){
+  .container{
+      display: block;
+  }
+  .tile{
+    
+      margin-bottom: 1rem;
   }
 }
 
