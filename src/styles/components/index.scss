@@ -1,5 +1,5 @@
 // Components index - imports all component styles
-@import './buttons';
-@import './modals';
-@import './loading';
-@import './gallery';
+@forward './buttons';
+@forward './modals';
+@forward './loading';
+@forward './gallery';

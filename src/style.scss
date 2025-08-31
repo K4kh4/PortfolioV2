@@ -20,10 +20,10 @@
 // MODULAR IMPORTS
 // =============================================================================
 
-@import './styles/base/index';
-@import './styles/utilities/index';
-@import './styles/layout/index';
-@import './styles/components/index';
+@use './styles/base';
+@use './styles/utilities';
+@use './styles/layout';
+@use './styles/components';
 
 // =============================================================================
 // PROJECT-SPECIFIC OVERRIDES (if needed)

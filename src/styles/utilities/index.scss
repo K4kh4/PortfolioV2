@@ -1,4 +1,4 @@
 // Utilities index - imports all utility styles
-@import './mixins';
-@import './helpers';
-@import './animations';
+@forward './mixins';
+@forward './helpers';
+@forward './animations';
