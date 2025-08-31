@@ -358,16 +358,17 @@
   <div id="loading-modal" class="loading-modal">
     <div class="loading-content">
       <h1 id="loading-text">Who's there?</h1>
+      <div class="progress-container">
+        <div class="progress-bar">
+          <div id="progress-fill" class="progress-fill"></div>
+        </div>
+        <div id="progress-text" class="progress-text">0%</div>
+      </div>
+      <button id="enter-button" class="enter-button hidden" onclick="hideLoadingModal()">ENTER</button>
     </div>
   </div>
 
-  <!-- Enter Modal -->
-  <div class="enter modal">
-
-    <div class="enter-content">
-      <button class="enter-button" onclick="closeModal()">ENTER</button>
-    </div>
-  </div>
+ 
 
 
   <!-- Gallery Modal -->

@@ -57,7 +57,7 @@ function updateFloatingImages() {
   const elapsed = (currentTime - startTime) / 1000; // Time in seconds
   
   floatingImages.forEach((image, index) => {
-    const speed = parseFloat(image.dataset.speed-0.1) || 1;
+    const speed = (parseFloat(image.dataset.speed) || 1) - 0.1;
     
     // Mouse movement parallax
     const moveX = (mouseX - 0.5) * speed * 50; // Max 50px movement
@@ -150,7 +150,8 @@ export const openModal = (modalClass, isNavigating = false) => {
   if (modal) {
     // Clear any previous GSAP properties and reset modal state
     gsap.killTweensOf(modal);
-    gsap.set(modal, { clearProps: "all" });
+    // Only clear specific properties instead of all to avoid global interference
+    gsap.set(modal, { clearProps: "scale,transform,transformOrigin,opacity" });
     modal.style.opacity = '';
     modal.style.display = 'block';
 
@@ -176,8 +177,8 @@ export const openModal = (modalClass, isNavigating = false) => {
       // Small delay to ensure modal is fully rendered
       setTimeout(() => {
         startFloatingAnimation();
-        // Add mouse movement listener
-        document.addEventListener('mousemove', handleMouseMove);
+        // Add mouse movement listener with passive option to avoid interference
+        document.addEventListener('mousemove', handleMouseMove, { passive: true });
         console.log('Floating effects initialized');
       }, 100);
     }
@@ -227,11 +228,26 @@ export const closeModal = (navigate = false, direction = 1, onComplete = null) =
       ease: "back.in(1.7)",
       onComplete: () => {
         activeModal.classList.remove('active');
-        // Clear any GSAP properties that might interfere
-        gsap.set(activeModal, { clearProps: "all" });
+        // Clear GSAP properties that might interfere with event handling
+        gsap.set(activeModal, {
+          clearProps: "scale,transform,transformOrigin",
+          // Ensure modal doesn't interfere with global event handling
+          pointerEvents: "none"
+        });
+        // Re-enable pointer events after a brief delay to ensure clean state
+        setTimeout(() => {
+          activeModal.style.pointerEvents = '';
+        }, 10);
         activeModal.style.display = 'none';
         activeModal.style.opacity = '';
         document.body.style.overflow = 'auto'; // Restore body scroll
+
+        // Ensure canvas can receive events after modal closes
+        const canvas = document.querySelector('#experience-canvas');
+        if (canvas) {
+          canvas.style.pointerEvents = 'auto';
+          canvas.style.zIndex = '1';
+        }
 
         // DON'T reset notebook and camera - keep them as they are
         // Users can continue clicking work buttons without reopening notebook
@@ -376,6 +392,7 @@ export function initializeModals() {
   document.addEventListener('click', function (e) {
     if (e.target.closest('.work-modal-container, .about h1, .about h2, .about p, .contact h1, .contact h2, .contact p')) {
       e.stopPropagation();
+      return; // Early return to prevent further processing
     }
   });
 
@@ -388,6 +405,7 @@ export function initializeModals() {
 
 /**
  * Hide the loading modal with animation
+ * add loading bar 
  * @param {number} messageInterval - Optional message interval to clear
  */
 export function hideLoadingModal(messageInterval = null) {
@@ -397,7 +415,6 @@ export function hideLoadingModal(messageInterval = null) {
     return;
   }
   
-  console.log('🔄 Hiding loading modal');
   
   // Clear message interval if provided
   if (messageInterval) {
@@ -410,22 +427,6 @@ export function hideLoadingModal(messageInterval = null) {
 
 }
 
-// =============================================================================
-// ENTER MODAL SYSTEM
-// =============================================================================
-
-/**
- * Show the enter modal with animation
- */
-export function showEnterModal() {
-  // Quick modal system initialization (workaround)
-  openModal("about");
-  openModal("enter");
- 
-}
-export function closeEnterModal() {
-  closeModal();
-}
 
 // =============================================================================
 // UI CONTROLS SYSTEM (HOME BUTTON & DARK MODE)
@@ -491,14 +492,14 @@ export function toggleDarkMode() {
  */
 export function initializeHomeButton(resetCameraFunction) {
   homeButton = document.getElementById('home-button');
-  
+
   if (homeButton) {
     homeButton.addEventListener('click', () => {
       console.log('🏠 Home button clicked - resetting camera');
       resetCameraFunction();
     });
-    hideHomeButton();
-     
+    // Don't hide the home button initially - show it by default
+    showHomeButton();
   }
 }
 
@@ -507,16 +508,19 @@ export function initializeHomeButton(resetCameraFunction) {
  */
 export function initializeDarkModeButton() {
   darkModeButton = document.getElementById('dark-mode-button');
-  
+
   if (darkModeButton) {
     // Set initial state
     darkModeButton.innerHTML = isDarkMode ?'<img src="https://img.icons8.com/ios-filled/24/000000/light-off.png" alt="Theme Toggle" />' : '<img src="https://img.icons8.com/ios-filled/24/000000/light-on.png" alt="Theme Toggle" />';
-    
+
     darkModeButton.addEventListener('click', () => {
       console.log('🌙/☀️ Dark mode button clicked - toggling mode');
       toggleDarkMode();
     });
-    
+
+    // Show the dark mode button by default
+    showDarkModeButton();
+
     console.log('Dark mode button initialized');
   }
 }

@@ -30,8 +30,6 @@ import {
   hideModal,
   navigateWork,
   initializeModals,
-  showEnterModal,
-  closeEnterModal,
   hideLoadingModal,
   initializeHomeButton,
   showHomeButton,
@@ -158,7 +156,18 @@ const buttonObjects = [
 
 // Modal system initialization and global exports
 document.addEventListener('DOMContentLoaded', () => {
-  // Initialize modal system
+  // Initialize canvas now that DOM is ready
+  canvas = document.querySelector('#experience-canvas');
+  if (!canvas) {
+    console.error('Canvas element not found!');
+    return;
+  }
+
+  // Initialize renderer and controls now that canvas exists
+  initializeRenderer();
+  initializeControls();
+
+  // Initialize modal system AFTER controls are ready
   initializeModals();
 
   // Initialize home button with camera reset functionality
@@ -169,14 +178,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Start loading messages
   startLoadingMessages();
+
 });
 
 // Make essential functions globally available for console debugging
 window.openModal = openModal;
 window.closeModal = closeModal;
 window.navigateWork = navigateWork;
-window.showEnterModal = showEnterModal;
-window.closeEnterModal = closeEnterModal;
 window.hideLoadingModal = hideLoadingModal;
 window.showHomeButton = showHomeButton;
 window.hideHomeButton = hideHomeButton;
@@ -200,8 +208,8 @@ window.resetNotebookView = () => {
 // THREE.JS SETUP AND CONFIGURATION
 // =============================================================================
 
-// Canvas and scene setup
-const canvas = document.querySelector('#experience-canvas')
+// Canvas and scene setup - will be initialized when DOM is ready
+let canvas = null;
 const sizes = {
   width: window.innerWidth,
   height: window.innerHeight
@@ -257,6 +265,10 @@ let modelLoaded = false;
 let objectsAssigned = false;
 const totalTextures = Object.keys(textureMap).length;
 
+// Progress tracking for loading bar
+let totalAssets = totalTextures + 1; // +1 for the model
+let loadedAssets = 0;
+
 // Loading screen messages that cycle while assets load
 const loadingMessages = [
   "Who's there?",
@@ -267,6 +279,25 @@ const loadingMessages = [
 ];
 let currentMessageIndex = 0;
 let messageInterval;
+
+/**
+ * Update the progress bar and percentage text
+ */
+function updateProgress() {
+  const progressPercentage = Math.round((loadedAssets / totalAssets) * 100);
+  const progressFill = document.getElementById('progress-fill');
+  const progressText = document.getElementById('progress-text');
+  
+  if (progressFill) {
+    progressFill.style.width = progressPercentage + '%';
+  }
+  
+  if (progressText) {
+    progressText.textContent = progressPercentage + '%';
+  }
+  
+  console.log(`Loading progress: ${loadedAssets}/${totalAssets} (${progressPercentage}%)`);
+}
 
 /**
  * Start the loading message cycle
@@ -287,7 +318,7 @@ function startLoadingMessages() {
     loadingText.style.animation = 'none';
     loadingText.offsetHeight; // Trigger reflow
     loadingText.style.animation = 'fadeInOut 1.5s ease-in-out';
-  }, 760);
+  }, 1500);
 }
 
 
@@ -300,22 +331,36 @@ function startLoadingMessages() {
 function onLoadComplete() {
   console.log('🎉 All assets loaded and objects ready!');
 
-  // Hide loading modal and show enter modal
-  hideLoadingModal(messageInterval);
-
-  // Show enter modal after loading modal fade out
-
-
-
   // Initialize notebook state
   if (notebookObject) {
     CloseNoteBook(notebookObject);
   }
 
+  // Clear the message interval
+  if (messageInterval) {
+    clearInterval(messageInterval);
+    messageInterval = null;
+  }
+
+  // Hide loading elements and show enter button
+  const loadingText = document.getElementById('loading-text');
+  const progressContainer = document.querySelector('.progress-container');
+  const enterButton = document.getElementById('enter-button');
+
+  if (loadingText) {
+    loadingText.style.display = 'none';
+  }
+
+  if (progressContainer) {
+    progressContainer.style.display = 'none';
+  }
+
+  if (enterButton) {
+    enterButton.classList.remove('hidden');
+  }
+
   // Ready for interaction
   console.log('✅ Portfolio ready for interaction!');
-  showEnterModal();
-
 }
 
 /**
@@ -361,7 +406,9 @@ Object.entries(textureMap).forEach(([key, value]) => {
     value.day,
     () => {
       texturesLoaded++;
+      loadedAssets++;
       console.log(`Texture loaded: ${key} (${texturesLoaded}/${totalTextures})`);
+      updateProgress();
       checkIfComplete();
     }
   );
@@ -466,7 +513,9 @@ loader.load("/models/Room_V1-Compresed-v1.glb", (gltf) => {
 
   // Mark model as loaded and check completion
   modelLoaded = true;
+  loadedAssets++;
   console.log('🏠 3D Model loaded successfully!');
+  updateProgress();
 
   // Check completion multiple times to ensure objects are assigned
   const checkInterval = setInterval(() => {
@@ -481,13 +530,42 @@ loader.load("/models/Room_V1-Compresed-v1.glb", (gltf) => {
 // RENDERER AND CAMERA SETUP
 // =============================================================================
 
-// Configure WebGL renderer with antialiasing for smooth visuals
-const renderer = new THREE.WebGLRenderer({
-  canvas: canvas,
-  antialias: true
-});
-renderer.setSize(sizes.width, sizes.height);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+// Renderer and controls will be initialized when DOM is ready
+let renderer = null;
+let controls = null;
+
+/**
+ * Initialize the WebGL renderer
+ */
+function initializeRenderer() {
+  renderer = new THREE.WebGLRenderer({
+    canvas: canvas,
+    antialias: true
+  });
+  renderer.setSize(sizes.width, sizes.height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+}
+
+/**
+ * Initialize camera controls
+ */
+function initializeControls() {
+  if (!canvas) {
+    console.error('Cannot initialize controls: canvas not found');
+    return;
+  }
+
+  controls = new OrbitControls(camera, canvas);
+  controls.enableDamping = true;
+  controls.enableZoom = true;
+  controls.enablePan = true;
+  controls.dampingFactor = 0.5;
+  controls.target.copy(originalTargetPosition);
+
+  // Force enable controls and ensure they're working
+  controls.enabled = true;
+  controls.update();
+}
 // =============================================================================
 // CAMERA POSITIONS AND CONTROLS
 // =============================================================================
@@ -508,12 +586,6 @@ const originalCameraPosition = new THREE.Vector3(12.19, 6.97, 9.10);
 const originalTargetPosition = new THREE.Vector3(0.09, 2.78, 0.08);
 
 camera.position.copy(originalCameraPosition);
-const controls = new OrbitControls(camera, canvas)
-controls.enableDamping = true
-controls.enableZoom = true
-controls.enablePan = true
-controls.dampingFactor = 0.5
-controls.target.copy(originalTargetPosition);
 
 // =============================================================================
 // EVENT HANDLERS
@@ -527,8 +599,10 @@ function OnResize() {
   sizes.height = window.innerHeight;
   camera.aspect = sizes.width / sizes.height;
   camera.updateProjectionMatrix();
-  renderer.setSize(sizes.width, sizes.height);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  if (renderer) {
+    renderer.setSize(sizes.width, sizes.height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  }
 }
 
 /**
@@ -622,8 +696,8 @@ function logInteractiveObjectsStatus() {
 // EVENT LISTENERS AND MAIN LOOP
 // =============================================================================
 
-// Register event listeners
-window.addEventListener("mousemove", (e) => { OnMouseMove(e); })
+// Register event listeners with capture option to ensure they're processed first
+window.addEventListener("mousemove", (e) => { OnMouseMove(e); }, { passive: true });
 window.addEventListener("resize", OnResize);
 window.addEventListener("click", OnClick);
 
@@ -635,7 +709,12 @@ const Update = () => {
   // Always continue the animation loop
   window.requestAnimationFrame(Update);
 
-  //check distance between camera and notebook if  its greater than 3  its open  close the notebook and open the resume 
+  // Don't do anything if renderer or controls aren't initialized yet
+  if (!renderer || !controls) {
+    return;
+  }
+
+  //check distance between camera and notebook if  its greater than 3  its open  close the notebook and open the resume
 
   const distance = controls.target.distanceTo(targetNotebookPosition);
   const distance2 = camera.position.distanceTo(cameraNotebookPosition);
@@ -648,8 +727,12 @@ const Update = () => {
   }
 
   // Always update camera controls - users should be able to move camera even when modal is open
-  controls.update();
-  renderer.render(scene, camera);
+  if (controls && controls.enabled) {
+    controls.update();
+  }
+  if (renderer) {
+    renderer.render(scene, camera);
+  }
 
   // Only perform raycasting and interactions when no modal is open
   if (!isModalOpen()) {
