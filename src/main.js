@@ -79,7 +79,6 @@ class PortfolioApp {
   }
 
   destroy() {
-    console.log('🧹 Cleaning up Portfolio App...');
     this.isDestroyed = true;
     
     // Stop animation loop
@@ -117,8 +116,6 @@ class PortfolioApp {
     window.removeEventListener("mouseup", OnMouseUp);
     window.removeEventListener("resize", OnResize);
     window.removeEventListener("click", OnClick);
-    
-    console.log('✅ Portfolio App cleanup completed');
   }
 }
 
@@ -334,19 +331,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 });
 
-// Make essential functions globally available for console debugging
-window.openModal = openModal;
-window.closeModal = closeModal;
-window.navigateWork = navigateWork;
-window.hideLoadingModal = hideLoadingModal;
-window.showHomeButton = showHomeButton;
-window.hideHomeButton = hideHomeButton;
-window.showDarkModeButton = showDarkModeButton;
-window.hideDarkModeButton = hideDarkModeButton;
-window.toggleDarkMode = toggleDarkMode;
-window.hideUIControls = hideUIControls;
-
-// Debug function to check modal state
 
 
 // Global function to manually reset notebook and camera to original position
@@ -807,7 +791,7 @@ function setupScene(gltf) {
         child.material = material;
       }
 
-      if (child.name.includes("Second_Room")) { // TODO: Rename in 3D model to be more descriptive
+      if (child.name.includes("Second_Room")) {
         const material = new THREE.MeshBasicMaterial();
         material.map = loadedTexture.Second.day;
         child.material = material;

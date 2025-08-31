@@ -24,7 +24,6 @@ const workConfig = [
     id: 1,
     title: 'N26\nbanking you way',
     descriptions: [
-      'N26 is a digital bank that offers a seamless banking experience. It\'s a bank that you can use to manage your money, pay your bills, and invest your money.',
       'N26 is a digital bank that offers a seamless banking experience. It\'s a bank that you can use to manage your money, pay your bills, and invest your money.'
     ],
     credits: [
@@ -554,23 +553,16 @@ export function initializeModals() {
  * add loading bar 
  * @param {number} messageInterval - Optional message interval to clear
  */
-export function hideLoadingModal(messageInterval = null) {
+export function hideLoadingModal() {
   const loadingModal = document.getElementById('loading-modal');
   if (!loadingModal) {
     console.error('Loading modal element not found');
     return;
   }
   
-  
-  // Clear message interval if provided
-  if (messageInterval) {
-    clearInterval(messageInterval);
-  }
-  
   // Fade out the loading modal
   loadingModal.style.opacity = '0';
   loadingModal.style.display = 'none';
-
 }
 
 
@@ -684,29 +676,25 @@ function getFocusable(modal) {
 }
 
 export function trapFocus(modal) {
-  try {
-    lastFocusedElement = document.activeElement;
-    const focusables = Array.from(getFocusable(modal));
-    if (focusables.length === 0) return;
-    const first = focusables[0];
-    const last = focusables[focusables.length - 1];
-    if (first) first.focus();
+  lastFocusedElement = document.activeElement;
+  const focusables = Array.from(getFocusable(modal));
+  if (focusables.length === 0) return;
+  
+  const first = focusables[0];
+  const last = focusables[focusables.length - 1];
+  if (first) first.focus();
 
-    focusTrapHandler = (e) => {
-      if (e.key !== 'Tab') return;
-      if (focusables.length === 0) { e.preventDefault(); return; }
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    };
-    document.addEventListener('keydown', focusTrapHandler);
-  } catch (err) {
-    console.warn('Focus trap initialization failed:', err);
-  }
+  focusTrapHandler = (e) => {
+    if (e.key !== 'Tab') return;
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
+  document.addEventListener('keydown', focusTrapHandler);
 }
 
 export function releaseFocus() {
@@ -740,18 +728,4 @@ export function hideUIControls() {
 // UTILITY FUNCTIONS
 // =============================================================================
 
-/**
- * Get current work number
- * @returns {number} - Current work number (1-5)
- */
-export function getCurrentWork() {
-  return currentWork;
-}
 
-/**
- * Get total works count
- * @returns {number} - Total number of works
- */
-export function getTotalWorks() {
-  return totalWorks;
-}

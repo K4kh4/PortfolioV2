@@ -125,7 +125,7 @@ export function handleHoverEffects(intersections, onHoverCallback) {
     
     // Check if this object should have hover effects
     const hoverTarget = hitboxObject.userData.hoverObject || originalObject;
-    if(hoverTarget.name.includes("Hover3")) return { hoverTarget, originalObject, hitboxObject };
+
     if (hoverTarget && hoverTarget.name.includes("Hover")) {
      
       if (hoverTarget !== currentHoverObject) {
@@ -183,48 +183,27 @@ export function handleCursorChanges(intersectionData) {
  * @param {Function} handleObjectClickCallback - Callback function for object clicks
  */
 export function handleClickEvents(intersections, interactiveObjects, handleObjectClickCallback) {
-  console.log('🎯 === RAYCAST CLICK ANALYSIS ===');
-  console.log(`🎯 Intersections found: ${intersections.length}`);
-  
-  if (intersections.length > 0) {
-    // Get the hitbox that was clicked
-    const hitboxObject = intersections[0].object;
-    console.log(`🎯 Closest hitbox: ${hitboxObject.name}`);
-    
-    const CLOSE_DISTANCE_THRESHOLD = 0.00001;
-    if (hitboxObject.userData.originalObject.scale.x < CLOSE_DISTANCE_THRESHOLD) {
-      console.log('🎯 Object is scaled down (hidden) - ignoring click');
-      return;
-    }
-    
-    // Get the original object from the hitbox
-    const originalObject = hitboxObject.userData.originalObject;
-    console.log(`🎯 Original object: ${originalObject ? originalObject.name : 'none'}`);
-    
-    if (originalObject && originalObject.name.includes("Pointer")) {
-      console.log('🎯 Object is a Pointer - checking interactive objects');
-      
-      // Check if the clicked object matches any interactive object
-      const clickedInteractiveObject = interactiveObjects.find(interactiveObj => {
-        const matches = originalObject.name.includes(interactiveObj.name);
-        console.log(`🎯 Checking ${interactiveObj.name} against ${originalObject.name}: ${matches}`);
-        return matches;
-      });
+  if (intersections.length === 0) return;
 
-      if (clickedInteractiveObject) {
-        console.log(`🎯 Found matching interactive object: ${clickedInteractiveObject.name}`);
-        handleObjectClickCallback(clickedInteractiveObject);
-      } else {
-        console.warn(`⚠️ No matching interactive object found for: ${originalObject.name}`);
-        console.log('🎯 Available interactive objects:', interactiveObjects.map(obj => obj.name));
-      }
-    } else {
-      console.log('🎯 Object is not a Pointer or no original object found');
-    }
-  } else {
-    console.log('🎯 No intersections found - click missed all objects');
+  // Get the hitbox that was clicked
+  const hitboxObject = intersections[0].object;
+  const CLOSE_DISTANCE_THRESHOLD = 0.00001;
+  
+  // Skip if object is scaled down (hidden)
+  if (hitboxObject.userData.originalObject.scale.x < CLOSE_DISTANCE_THRESHOLD) return;
+  
+  // Get the original object from the hitbox
+  const originalObject = hitboxObject.userData.originalObject;
+  if (!originalObject || !originalObject.name.includes("Pointer")) return;
+  
+  // Check if the clicked object matches any interactive object
+  const clickedInteractiveObject = interactiveObjects.find(interactiveObj => 
+    originalObject.name.includes(interactiveObj.name)
+  );
+
+  if (clickedInteractiveObject) {
+    handleObjectClickCallback(clickedInteractiveObject);
   }
-  console.log('🎯 === END RAYCAST CLICK ANALYSIS ===');
 }
 
 /**
