@@ -176,6 +176,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initialize dark mode button
   initializeDarkModeButton();
 
+  // Bind enter button without inline handler
+  const enterBtn = document.getElementById('enter-button');
+  if (enterBtn) {
+    enterBtn.addEventListener('click', () => hideLoadingModal());
+  }
+
   // Start loading messages
   startLoadingMessages();
 

@@ -1,0 +1,133 @@
+// =============================================================================
+// GALLERY COMPONENT
+// =============================================================================
+
+// Gallery Container
+.gallery {
+  padding: $spacing-xxl $spacing-xl;
+  background-color: $color-bg;
+  color: $color-text;
+  font-family: $font-primary;
+  overflow-y: auto;
+
+  @include scrollbar();
+}
+
+// Gallery Title
+.gallery-title {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-xl;
+  text-transform: uppercase;
+  color: $color-text;
+  text-align: center;
+}
+
+// Masonry Gallery Grid
+.masonry-gallery {
+  columns: 3;
+  column-gap: 0;
+
+  @include mq($bp-md) {
+    columns: 2;
+  }
+
+  @include mq($bp-sm) {
+    columns: 1;
+    column-gap: $spacing-sm;
+  }
+}
+
+// Gallery Item
+.masonry-item {
+  break-inside: avoid;
+  margin-bottom: $spacing-md;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  transition: transform $transition-normal, box-shadow $transition-normal;
+  background: $color-surface;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: $shadow-lg;
+  }
+
+  img {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform $transition-normal;
+
+    &:hover {
+      transform: scale(1.02);
+    }
+  }
+}
+
+// CSS Grid Gallery Alternative
+.container {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-gap: $grid-gap;
+  max-width: $container-max-width;
+  margin: 0 auto;
+}
+
+.tile {
+  img {
+    @include img-cover();
+    transition: transform $transition-normal;
+
+    &:hover {
+      transform: scale(1.02);
+    }
+  }
+
+  // Grid positioning for featured tiles
+  &:nth-child(1) {
+    grid-column: span 4;
+    grid-row: span 2;
+  }
+
+  &:nth-child(2),
+  &:nth-child(3) {
+    grid-column: span 2;
+  }
+
+  &:nth-child(4),
+  &:nth-child(5) {
+    grid-column: span 2;
+  }
+}
+
+// =============================================================================
+// RESPONSIVE GALLERY
+// =============================================================================
+
+@include mq($bp-sm) {
+  .container {
+    display: block;
+
+    .tile {
+      margin-bottom: $grid-gap;
+
+      &:nth-child(1),
+      &:nth-child(2),
+      &:nth-child(3),
+      &:nth-child(4),
+      &:nth-child(5) {
+        grid-column: span 1;
+        grid-row: span 1;
+      }
+    }
+  }
+
+  .gallery {
+    padding: $spacing-lg $spacing-md;
+  }
+
+  .gallery-title {
+    font-size: $font-size-xl;
+    margin-bottom: $spacing-lg;
+  }
+}

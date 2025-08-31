@@ -1,0 +1,70 @@
+// =============================================================================
+// MAIN SCSS ENTRY POINT
+// Portfolio Stylesheet
+// =============================================================================
+
+// 1. BASE STYLES
+// =============================================================================
+@import 'base/reset';
+@import 'base/variables';
+@import 'base/typography';
+
+// 2. UTILITIES
+// =============================================================================
+@import 'utilities/mixins';
+@import 'utilities/helpers';
+@import 'utilities/animations';
+
+// 3. LAYOUT
+// =============================================================================
+@import 'layout/experience';
+@import 'layout/responsive';
+
+// 4. COMPONENTS
+// =============================================================================
+@import 'components/buttons';
+@import 'components/modals';
+@import 'components/loading';
+@import 'components/gallery';
+
+// =============================================================================
+// CUSTOM COMPONENT STYLES (if any)
+// =============================================================================
+
+// Add any custom component styles here that don't fit into the above categories
+
+// =============================================================================
+// OVERRIDES (for specific cases)
+// =============================================================================
+
+// Any style overrides or fixes can go here
+
+// =============================================================================
+// PRINT STYLES
+// =============================================================================
+@media print {
+  // Hide interactive elements when printing
+  .modal,
+  .home-button,
+  .dark-mode-button,
+  .enter-button,
+  .nav-arrow,
+  .modal-exit-button {
+    display: none !important;
+  }
+
+  // Ensure text is readable on white background
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  // Make sure content is visible
+  .about {
+    background: white !important;
+
+    h1, h2, p {
+      color: black !important;
+    }
+  }
+}

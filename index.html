@@ -6,25 +6,57 @@
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>NatYeah</title>
+  <meta name="description" content="Portfolio of Natia Kalandia – copywriter and creative. Selected works, about, and contact." />
+  <meta property="og:title" content="Natia Kalandia – Portfolio" />
+  <meta property="og:description" content="Copywriting portfolio: selected works, about, and contact." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://your-domain.example/" />
+  <meta property="og:image" content="/works/Work1_P1.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="theme-color" content="#0b0d10" />
 </head>
 
 <body>
-  <div id="app"></div>
+  <noscript>
+    This site requires JavaScript to function properly. Please enable JavaScript in your browser settings.
+  </noscript>
 
-  <!-- Demo buttons for testing (if needed, use window.openModal('work1') etc in console)
-  <div class="demo-buttons" style="display: none;">
-    <button class="demo-button" data-modal="work1">Work 1</button>
-    <button class="demo-button" data-modal="work2">Work 2</button>
-    <button class="demo-button" data-modal="work3">Work 3</button>
-    <button class="demo-button" data-modal="work4">Work 4</button>
-    <button class="demo-button" data-modal="work5">Work 5</button>
-    <button class="demo-button" data-modal="about">About</button>
-    <button class="demo-button" data-modal="contact">Contact</button>
-  </div> -->
+  <!-- Work Modal Template (used to generate work modals on demand) -->
+  <template id="work-modal-template">
+    <div class="modal work" role="dialog" aria-modal="true" tabindex="-1">
+      <button class="modal-exit-button" type="button" aria-label="Close modal">×</button>
+      <div class="work-modal-container">
+        <div class="logo-column">
+          <div class="header">
+            <h1 class="brand-name">NATIA<br>KALANDIA</h1>
+            <p class="tagline">Personality hire copywriter</p>
+          </div>
 
-  <!-- Work 1 Modal - Lidl Pfand ID -->
-  <div class="work1 modal">
-    <button class="modal-exit-button">×</button>
+          <div class="project-content">
+            <h2 class="project-title"></h2>
+            <div class="project-description-group"></div>
+
+            <div class="credits"></div>
+          </div>
+
+          <div class="navigation" role="group" aria-label="Work navigation">
+            <button class="nav-arrow" type="button" aria-label="Previous work">←</button>
+            <button class="nav-arrow" type="button" aria-label="Next work">→</button>
+          </div>
+        </div>
+
+        <div class="media-column">
+          <div class="media-grid"></div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+ 
+
+  <!-- Work 1 Modal -N26-->
+  <div class="work1 modal" id="work1" role="dialog" aria-modal="true" aria-labelledby="work1-title" tabindex="-1">
+    <button class="modal-exit-button" type="button" aria-label="Close modal">×</button>
     <div class="work-modal-container">
       <div class="logo-column">
         <div class="header">
@@ -33,7 +65,7 @@
         </div>
 
         <div class="project-content">
-          <h2 class="project-title">N26<br>banking you way</h2>
+          <h2 class="project-title" id="work1-title">N26<br>banking you way</h2>
 
           <p class="project-description">
             N26 is a digital bank that offers a seamless banking experience. It's a bank that you can use to manage your
@@ -54,40 +86,40 @@
 
         </div>
 
-        <div class="navigation">
-          <button class="nav-arrow">←</button>
-          <button class="nav-arrow">→</button>
+        <div class="navigation" role="group" aria-label="Work navigation">
+          <button class="nav-arrow" type="button" aria-label="Previous work">←</button>
+          <button class="nav-arrow" type="button" aria-label="Next work">→</button>
         </div>
       </div>
 
       <div class="media-column">
         <div class="media-grid">
           <div class="media-item">
-            <img src="/works/Work1_P1.png" alt="Text">
+            <img src="/works/Work1_P1.png" alt="Text" loading="lazy" decoding="async">
           </div>
           <div class="media-item">
-            <img src="/works/Work1_P2.png" alt="Text">
+            <img src="/works/Work1_P2.png" alt="Text" loading="lazy" decoding="async">
           </div>
           <div class="media-item">
-            <img src="/works/Work1_P3.png" alt="Text">
+            <img src="/works/Work1_P3.png" alt="Text" loading="lazy" decoding="async">
           </div>
           <div class="media-item">
-            <img src="/works/Work1_P4.png" alt="Text">
+            <img src="/works/Work1_P4.png" alt="Text" loading="lazy" decoding="async">
           </div>
           <div class="media-item">
-            <img src="/works/Work1_P5.png" alt="Text">
+            <img src="/works/Work1_P5.png" alt="Text" loading="lazy" decoding="async">
           </div>
           <div class="media-item">
-            <img src="/works/Work1_P6.png" alt="Text">
+            <img src="/works/Work1_P6.png" alt="Text" loading="lazy" decoding="async">
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Work 2 Modal - Project Alpha -->
-  <div class="work2 modal">
-    <button class="modal-exit-button">×</button>
+  <!-- Work 2 Modal - PLASTIC FISCHER-->
+  <div class="work2 modal" id="work2" role="dialog" aria-modal="true" aria-labelledby="work2-title" tabindex="-1">
+    <button class="modal-exit-button" type="button" aria-label="Close modal">×</button>
     <div class="work-modal-container">
       <div class="logo-column">
         <div class="header">
@@ -97,7 +129,7 @@
 
         <div class="project-content">
 
-          <h2 class="project-title"> PLASTIC FISCHER</h2>
+          <h2 class="project-title" id="work2-title"> PLASTIC FISCHER</h2>
 
           <p class="project-description">
             This campaign tells the story of an environmental hero pushed to his breaking point. Through a staged viral
@@ -119,28 +151,28 @@
 
         </div>
 
-        <div class="navigation">
-          <button class="nav-arrow">←</button>
-          <button class="nav-arrow">→</button>
+        <div class="navigation" role="group" aria-label="Work navigation">
+          <button class="nav-arrow" type="button" aria-label="Previous work">←</button>
+          <button class="nav-arrow" type="button" aria-label="Next work">→</button>
         </div>
       </div>
 
       <div class="media-column">
         <div class="media-grid">
           <div class="media-item">
-            <img src="/works/Work2_P1.png" alt="Project Alpha hero image">
+            <img src="/works/Work2_P1.png" alt="Project Alpha hero image" loading="lazy" decoding="async">
           </div>
           <div class="media-item">
-            <img src="/works/Work2_P2.png" alt="User interface design">
+            <img src="/works/Work2_P2.png" alt="User interface design" loading="lazy" decoding="async">
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Work 3 Modal - Digital Innovation -->
-  <div class="work3 modal">
-    <button class="modal-exit-button">×</button>
+  <!-- Work 3 Modal - NORSE PROJECT -->
+  <div class="work3 modal" id="work3" role="dialog" aria-modal="true" aria-labelledby="work3-title" tabindex="-1">
+    <button class="modal-exit-button" type="button" aria-label="Close modal">×</button>
     <div class="work-modal-container">
       <div class="logo-column">
         <div class="header">
@@ -149,7 +181,7 @@
         </div>
 
         <div class="project-content">
-          <h2 class="project-title">NORSE PROJECT</h2>
+          <h2 class="project-title" id="work3-title">NORSE PROJECT</h2>
 
           <p class="project-description">
             Through shifting seasons and changing skies. From a breezy spring walk to a sudden autumn downpour or the
@@ -169,40 +201,40 @@
 
         </div>
 
-        <div class="navigation">
-          <button class="nav-arrow">←</button>
-          <button class="nav-arrow">→</button>
+        <div class="navigation" role="group" aria-label="Work navigation">
+          <button class="nav-arrow" type="button" aria-label="Previous work">←</button>
+          <button class="nav-arrow" type="button" aria-label="Next work">→</button>
         </div>
       </div>
 
       <div class="media-column">
         <div class="media-grid">
           <div class="media-item">
-            <img src="/works/Work3_P1.png" alt="Digital innovation concept">
+            <img src="/works/Work3_P1.png" alt="Digital innovation concept" loading="lazy" decoding="async">
           </div>
           <div class="media-item">
-            <img src="/works/Work3_P2.png" alt="Interactive demo">
+            <img src="/works/Work3_P2.png" alt="Interactive demo" loading="lazy" decoding="async">
           </div>
           <div class="media-item">
-            <img src="/works/Work3_P3.png" alt="Technology implementation">
+            <img src="/works/Work3_P3.png" alt="Technology implementation" loading="lazy" decoding="async">
           </div>
           <div class="media-item">
-            <img src="/works/Work3_P4.png" alt="User journey mapping">
+            <img src="/works/Work3_P4.png" alt="User journey mapping" loading="lazy" decoding="async">
           </div>
           <div class="media-item">
-            <img src="/works/Work3_P5.png" alt="User journey mapping">
+            <img src="/works/Work3_P5.png" alt="User journey mapping" loading="lazy" decoding="async">
           </div>
           <div class="media-item">
-            <img src="/works/Work3_P6.png" alt="User journey mapping">
+            <img src="/works/Work3_P6.png" alt="User journey mapping" loading="lazy" decoding="async">
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Work 4 Modal - Brand Activation -->
-  <div class="work4 modal">
-    <button class="modal-exit-button">×</button>
+  <!-- Work 4 Modal - DR. Martens -->
+  <div class="work4 modal" id="work4" role="dialog" aria-modal="true" aria-labelledby="work4-title" tabindex="-1">
+    <button class="modal-exit-button" type="button" aria-label="Close modal">×</button>
     <div class="work-modal-container">
       <div class="logo-column">
         <div class="header">
@@ -211,7 +243,7 @@
         </div>
 
         <div class="project-content">
-          <h2 class="project-title">DR. Martens<br>It's just gonna hurt a little</h2>
+          <h2 class="project-title" id="work4-title">DR. Martens<br>It's just gonna hurt a little</h2>
 
           <p class="project-description">
             Dr. Martens 1460 is one of the iconic shoes there is. It comes with instant recognition and style approval
@@ -228,19 +260,19 @@
 
         </div>
 
-        <div class="navigation">
-          <button class="nav-arrow">←</button>
-          <button class="nav-arrow">→</button>
+        <div class="navigation" role="group" aria-label="Work navigation">
+          <button class="nav-arrow" type="button" aria-label="Previous work">←</button>
+          <button class="nav-arrow" type="button" aria-label="Next work">→</button>
         </div>
       </div>
 
       <div class="media-column">
         <div class="media-grid">
           <div class="media-item">
-            <img src="/works/Work4_P1.png" alt="Brand activation event">
+            <img src="/works/Work4_P1.png" alt="Brand activation event" loading="lazy" decoding="async">
           </div>
           <div class="media-item">
-            <img src="/works/Work4_P2.png" alt="Experiential setup">
+            <img src="/works/Work4_P2.png" alt="Experiential setup" loading="lazy" decoding="async">
           </div>
 
         </div>
@@ -248,9 +280,9 @@
     </div>
   </div>
 
-  <!-- Work 5 Modal - Creative Campaign -->
-  <div class="work5 modal">
-    <button class="modal-exit-button">×</button>
+  <!-- Work 5 Modal -IKEA -->
+  <div class="work5 modal" id="work5" role="dialog" aria-modal="true" aria-labelledby="work5-title" tabindex="-1">
+    <button class="modal-exit-button" type="button" aria-label="Close modal">×</button>
     <div class="work-modal-container">
       <div class="logo-column">
         <div class="header">
@@ -259,7 +291,7 @@
         </div>
 
         <div class="project-content">
-          <h2 class="project-title">IKEA<br>Beyond trends</h2>
+          <h2 class="project-title" id="work5-title">IKEA<br>Beyond trends</h2>
 
           <p class="project-description">
             Great design transcends trends. To prove the enduring versatility of IKEA's most beloved products, our
@@ -273,22 +305,22 @@
 
         </div>
 
-        <div class="navigation">
-          <button class="nav-arrow">←</button>
-          <button class="nav-arrow">→</button>
+        <div class="navigation" role="group" aria-label="Work navigation">
+          <button class="nav-arrow" type="button" aria-label="Previous work">←</button>
+          <button class="nav-arrow" type="button" aria-label="Next work">→</button>
         </div>
       </div>
 
       <div class="media-column">
         <div class="media-grid">
           <div class="media-item">
-            <img src="/works/Work5_P2.png" alt="Key visual design">
+            <img src="/works/Work5_P2.png" alt="Key visual design" loading="lazy" decoding="async">
           </div>
           <div class="media-item">
-            <img src="/works/Work5_P3.png" alt="Campaign rollout">
+            <img src="/works/Work5_P3.png" alt="Campaign rollout" loading="lazy" decoding="async">
           </div>
           <div class="media-item">
-            <img src="/works/Work5_P4.png" alt="Campaign results">
+            <img src="/works/Work5_P4.png" alt="Campaign results" loading="lazy" decoding="async">
           </div>
         </div>
       </div>
@@ -296,44 +328,44 @@
   </div>
 
   <!-- About Modal -->
-  <div class="about modal">
-    <button class="modal-exit-button">×</button>
+  <div class="about modal" id="about" role="dialog" aria-modal="true" aria-labelledby="about-title" tabindex="-1">
+    <button class="modal-exit-button" type="button" aria-label="Close modal">×</button>
 
     <!-- Floating Images -->
-    <div class="floating-images">
+    <div class="floating-images" aria-hidden="true">
       <!-- Background layer -->
       <div class="floating-image background-layer" data-speed="0.6">
-        <img src="/works/AboutMe/building.png" alt="Building">
+        <img src="/works/AboutMe/building.png" alt="Building" loading="lazy" decoding="async">
       </div>
       <div class="floating-image foreground-layer" data-speed="0.5">
-        <img src="/works/AboutMe/NatiassBoyfriend.png" alt="Natia's Boyfriend">
+        <img src="/works/AboutMe/NatiassBoyfriend.png" alt="Natia's Boyfriend" loading="lazy" decoding="async">
       </div>
     
       <div class="floating-image foreground-layer" data-speed="0.3">
-        <img src="/works/AboutMe/medusa.png" alt="Medusa">
+        <img src="/works/AboutMe/medusa.png" alt="Medusa" loading="lazy" decoding="async">
       </div>
       <div class="floating-image background-layer" data-speed="0.4">
-        <img src="/works/AboutMe/Book.png" alt="Books">
+        <img src="/works/AboutMe/Book.png" alt="Books" loading="lazy" decoding="async">
       </div>
 
       <!-- Main layer -->
       <div class="floating-image main-layer" data-speed="0.2">
-        <img src="/works/AboutMe/Natia.png" alt="Natia" class="main-portrait">
+        <img src="/works/AboutMe/Natia.png" alt="Natia" class="main-portrait" loading="lazy" decoding="async">
       </div>
 
       <!-- Foreground layer -->
       <div class="floating-image foreground-layer" data-speed="0.1">
-        <img src="/works/AboutMe/blueBerry.png" alt="Blue Berry">
+        <img src="/works/AboutMe/blueBerry.png" alt="Blue Berry" loading="lazy" decoding="async">
       </div>
      
      
       <div class="floating-image background-layer" data-speed="0.0">
-        <img src="/works/AboutMe/star.png" alt="Star">
+        <img src="/works/AboutMe/star.png" alt="Star" loading="lazy" decoding="async">
       </div>
     </div>
 
     <div class="about-content">
-      <h1>Hallo there!  </h1>
+      <h1 id="about-title">Hallo there!  </h1>
       <h2>I’m Natia.  </h2>
       <p>Growing up, I was always told that I had a perfect voice for public speaking and I should have kept it in mind for my future career. I choose copywriting instead, and ever since my mom is trying to figure out what it is, that I actually do. 
         It takes approximately 7 minutes to figure out that I’m an only child and, for some—even - even less, that I’m a March Pisces. So far I can’t figure out what’s my tell. 
@@ -344,55 +376,50 @@
   </div>
 
   <!-- Contact Modal -->
-  <div class="contact modal">
-    <button class="modal-exit-button">×</button>
-    <h1 class="modal-title">Contact</h1>
-    <h2>Let's Create Something Amazing</h2>
-    <p>Ready to bring your ideas to life? I'm always excited to collaborate on projects that make a difference.</p>
-    <p>Email: chris@example.com<br>
-      LinkedIn: /in/christsirigotis<br>
-      Phone: +49 xxx xxx xxxx</p>
+  <div class="contact modal" id="contact" role="dialog" aria-modal="true" aria-labelledby="contact-title" tabindex="-1">
+    <button class="modal-exit-button" type="button" aria-label="Close modal">×</button>
+   
   </div>
 
   <!-- Loading Modal -->
-  <div id="loading-modal" class="loading-modal">
+  <div id="loading-modal" class="loading-modal" role="dialog" aria-modal="true" aria-labelledby="loading-text" tabindex="-1">
     <div class="loading-content">
       <h1 id="loading-text">Who's there?</h1>
       <div class="progress-container">
-        <div class="progress-bar">
+        <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-labelledby="loading-text">
           <div id="progress-fill" class="progress-fill"></div>
         </div>
-        <div id="progress-text" class="progress-text">0%</div>
+        <div id="progress-text" class="progress-text" aria-live="polite">0%</div>
       </div>
-      <button id="enter-button" class="enter-button hidden" onclick="hideLoadingModal()">ENTER</button>
+      <button id="enter-button" class="enter-button hidden" type="button" aria-label="Enter experience">ENTER</button>
       <div class="loading-instructions">
         Use left/right click and mouse wheel to navigate!
       </div>
     </div>
   </div>
 
- 
+  
 
 
   <!-- Gallery Modal -->
-  <div class="gallery modal">
-    <button class="modal-exit-button">×</button>
+  <div class="gallery modal" id="gallery" role="dialog" aria-modal="true" aria-label="Gallery" tabindex="-1">
+    <button class="modal-exit-button" type="button" aria-label="Close modal">×</button>
 
     <div class="container">
       <div class="tile">
-        <img src="/works/Extra/E_1.png" alt="">
+        <img src="/works/Extra/E_1.png" alt="" loading="lazy" decoding="async">
       </div>
       <div class="tile">
-        <img src="/works/Extra/E_2.png" alt="">
+        <img src="/works/Extra/E_2.png" alt="" loading="lazy" decoding="async">
       </div>
       <div class="tile">
-        <img src="/works/Extra/E_3.png" alt="">
+        <img src="/works/Extra/E_3.png" alt="" loading="lazy" decoding="async">
       </div>
       <div class="tile">
-        <img src="/works/Extra/E_4.png" alt="">
+        <img src="/works/Extra/E_4.png" alt="" loading="lazy" decoding="async">
       </div>
       <div class="tile">
-        <img src="/works/Extra/E_5.png" alt="">
+        <img src="/works/Extra/E_5.png" alt="" loading="lazy" decoding="async">
       </div>
     </div>
   </div>
@@ -402,14 +429,17 @@
 
 
   <!-- Home Button -->
-  <button id="home-button" class="home-button">
-    <img src="https://img.icons8.com/material-rounded/24/000000/home.png" alt="Home" />
-
+  <button id="home-button" class="home-button" type="button" aria-label="Home">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
+      <path d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3l9-8z"/>
+    </svg>
   </button>
 
   <!-- Dark Mode Toggle Button -->
-  <button id="dark-mode-button" class="dark-mode-button">
-    <img src="https://img.icons8.com/ios-filled/24/000000/light-on.png" alt="Theme Toggle" />
+  <button id="dark-mode-button" class="dark-mode-button" type="button" aria-label="Toggle theme">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
+      <path d="M12 2a1 1 0 0 1 1 1v2a1 1 0 1 1-2 0V3a1 1 0 0 1 1-1zm0 16a6 6 0 1 0 0-12 6 6 0 0 0 0 12zm9-7a1 1 0 0 1-1 1h-2a1 1 0 1 1 0-2h2a1 1 0 0 1 1 1zM6 12a1 1 0 0 1-1 1H3a1 1 0 1 1 0-2h2a1 1 0 0 1 1 1zm12.95 6.536a1 1 0 0 1-1.414 0l-1.414-1.414a1 1 0 0 1 1.414-1.414l1.414 1.414a1 1 0 0 1 0 1.414zM7.879 7.879A1 1 0 0 1 6.464 6.464L5.05 5.05A1 1 0 0 1 6.464 3.636l1.414 1.414A1 1 0 0 1 7.879 7.88zm8.485-4.243l1.414 1.414A1 1 0 1 1 16.364 6.464l-1.414-1.414A1 1 0 1 1 16.364 3.636zM7.878 16.121a1 1 0 0 1 0 1.414L6.464 18.95a1 1 0 0 1-1.414-1.414l1.414-1.414a1 1 0 0 1 1.414 0z"/>
+    </svg>
   </button>
 
   <div id="experience">

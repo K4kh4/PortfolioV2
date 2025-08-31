@@ -1,0 +1,85 @@
+// =============================================================================
+// LOADING COMPONENT
+// =============================================================================
+
+// Loading Modal
+.loading-modal {
+  @include pos-fixed(0, 0, 0, 0);
+  background-color: $color-loading-bg;
+  z-index: $z-loading;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-primary;
+}
+
+.loading-content {
+  text-align: center;
+}
+
+// Loading Text
+#loading-text {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-loading-text;
+  margin: 0;
+  margin-bottom: $spacing-xxl;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  animation: fadeInOut 1.5s ease-in-out;
+}
+
+// Loading Instructions
+.loading-instructions {
+  margin-top: $spacing-lg;
+  font-size: $font-size-sm;
+  color: $color-loading-instructions;
+  text-align: center;
+  font-weight: $font-weight-normal;
+  letter-spacing: 0.5px;
+  opacity: 0.8;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+// Progress Bar Container
+.progress-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: $spacing-xl;
+  width: 100%;
+  max-width: 400px;
+}
+
+// Progress Bar Background
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: rgba($color-loading-text, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: $spacing-sm;
+}
+
+// Progress Fill Animation
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, $color-primary, $color-secondary);
+  width: 0%;
+  transition: width $transition-fast;
+  border-radius: 4px;
+}
+
+// Progress Percentage Text
+.progress-text {
+  font-size: $font-size-base;
+  color: $color-loading-instructions;
+  font-weight: $font-weight-normal;
+  letter-spacing: 1px;
+}
+
+// Hidden State for Enter Button
+.enter-button.hidden {
+  display: none;
+}

@@ -16,7 +16,153 @@ let isDarkMode = true; // Start in dark mode
 
 // Modal navigation state for work modals
 let currentWork = 1;
-const totalWorks = 5;
+let totalWorks = 5;
+
+// Work configuration (title, descriptions, credits, media)
+const workConfig = [
+  {
+    id: 1,
+    title: 'N26\nbanking you way',
+    descriptions: [
+      'N26 is a digital bank that offers a seamless banking experience. It\'s a bank that you can use to manage your money, pay your bills, and invest your money.',
+      'N26 is a digital bank that offers a seamless banking experience. It\'s a bank that you can use to manage your money, pay your bills, and invest your money.'
+    ],
+    credits: [
+      'Copywriter: Natia Kalandia',
+      'Art Director: Anya Zainieva',
+      'Creative Director: luca pristerbach, passcal momper',
+      'Agency: Potvis'
+    ],
+    media: [
+      '/works/Work1_P1.png','/works/Work1_P2.png','/works/Work1_P3.png','/works/Work1_P4.png','/works/Work1_P5.png','/works/Work1_P6.png'
+    ]
+  },
+  {
+    id: 2,
+    title: 'PLASTIC FISCHER',
+    descriptions: [
+      'This campaign tells the story of an environmental hero pushed to his breaking point. Through a staged viral video, the CEO of Plastic Fischer appears to sabotage his own mission, fed up with public apathy.',
+      'This provocative narrative is designed to shatter indifference and drive donations by asking one simple question: what will it take to finally clean the rivers?'
+    ],
+    credits: [
+      'Copywriter: Natia Kalandia',
+      'Art Director: Anya Zainieva',
+      'Creative Director: luca pristerbach, passcal momper',
+      'Agency: Potvis'
+    ],
+    media: ['/works/Work2_P1.png','/works/Work2_P2.png']
+  },
+  {
+    id: 3,
+    title: 'NORSE PROJECT',
+    descriptions: [
+      'Through shifting seasons and changing skies. From a breezy spring walk to a sudden autumn downpour or the first snow of winter, a Norse Projects hat is your constant companion. Designed for life\'s moments, no matter the weather.'
+    ],
+    credits: [
+      'Copywriter: Natia Kalandia',
+      'Art Director: Anya Zainieva',
+      'Creative Director: luca pristerbach, passcal momper',
+      'Agency: Potvis'
+    ],
+    media: ['/works/Work3_P1.png','/works/Work3_P2.png','/works/Work3_P3.png','/works/Work3_P4.png','/works/Work3_P5.png','/works/Work3_P6.png']
+  },
+  {
+    id: 4,
+    title: 'DR. Martens\nIt\'s just gonna hurt a little',
+    descriptions: [
+      'Dr. Martens 1460 is one of the iconic shoes there is. It comes with instant recognition and style approval as well. That’s why it’s worn equally successfully by almost every demographic representative. You either own one or want to own one. But what I’m gonna say next is gonna hurt a little.'
+    ],
+    credits: [
+      'Copywriter: Natia Kalandia'
+    ],
+    media: ['/works/Work4_P1.png','/works/Work4_P2.png']
+  },
+  {
+    id: 5,
+    title: 'IKEA\nBeyond trends',
+    descriptions: [
+      'Great design transcends trends. To prove the enduring versatility of IKEA\'s most beloved products, our "Beyond Trends" project used Midjourney to filter them through history\'s greatest art styles. This visual experiment confirms that IKEA\'s design doesn\'t just cater to one aesthetic—it can embody them all.'
+    ],
+    credits: [
+      'Copywriter: Natia Kalandia'
+    ],
+    media: ['/works/Work5_P2.png','/works/Work5_P3.png','/works/Work5_P4.png']
+  }
+];
+totalWorks = workConfig.length;
+
+// Create work modal from template
+function createWorkModal(workId) {
+  const config = workConfig.find(w => w.id === workId);
+  if (!config) return null;
+  const tpl = document.getElementById('work-modal-template');
+  if (!tpl) return null;
+  const node = tpl.content.firstElementChild.cloneNode(true);
+
+  node.classList.add('work' + workId);
+  node.setAttribute('id', 'work' + workId);
+  node.setAttribute('aria-labelledby', 'work' + workId + '-title');
+
+  const title = node.querySelector('.project-title');
+  if (title) {
+    title.id = 'work' + workId + '-title';
+    title.innerHTML = config.title.replace(/\n/g, '<br>');
+  }
+
+  const descGroup = node.querySelector('.project-description-group');
+  if (descGroup) {
+    descGroup.innerHTML = '';
+    config.descriptions.forEach(text => {
+      const p = document.createElement('p');
+      p.className = 'project-description';
+      p.textContent = text;
+      descGroup.appendChild(p);
+    });
+  }
+
+  const credits = node.querySelector('.credits');
+  if (credits) {
+    credits.innerHTML = '';
+    config.credits.forEach(text => {
+      const div = document.createElement('div');
+      div.className = 'credit-item';
+      div.textContent = text;
+      credits.appendChild(div);
+    });
+  }
+
+  const grid = node.querySelector('.media-grid');
+  if (grid) {
+    grid.innerHTML = '';
+    config.media.forEach(src => {
+      const item = document.createElement('div');
+      item.className = 'media-item';
+      const img = document.createElement('img');
+      img.src = src;
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.alt = '';
+      item.appendChild(img);
+      grid.appendChild(item);
+    });
+  }
+
+  // Wire up buttons inside the new modal
+  const closeBtn = node.querySelector('.modal-exit-button');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', (e) => { e.stopPropagation(); closeModal(); });
+  }
+  node.querySelectorAll('.nav-arrow').forEach(button => {
+    button.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const direction = button.textContent.trim() === '←' ? 'prev' : 'next';
+      navigateWork(direction);
+    });
+  });
+
+  document.body.appendChild(node);
+  return node;
+}
 
 // Modal DOM references - populated during initialization
 let Modals = {};
@@ -144,8 +290,14 @@ export const openModal = (modalClass, isNavigating = false) => {
   }
 
   // Open the requested modal
-  const modal = typeof modalClass === 'string' ?
+  let modal = typeof modalClass === 'string' ?
     document.querySelector('.modal.' + modalClass) : modalClass;
+
+  // If work modal not present in DOM yet, create it on-demand
+  if (!modal && typeof modalClass === 'string' && /^work[1-9]\d*$/.test(modalClass)) {
+    const workId = parseInt(modalClass.replace('work',''), 10);
+    modal = createWorkModal(workId);
+  }
 
   if (modal) {
     // Clear any previous GSAP properties and reset modal state
@@ -163,11 +315,10 @@ export const openModal = (modalClass, isNavigating = false) => {
     hideUIControls();
 
     // Update current work index if it's a work modal
-    if (modal.classList.contains('work1')) currentWork = 1;
-    else if (modal.classList.contains('work2')) currentWork = 2;
-    else if (modal.classList.contains('work3')) currentWork = 3;
-    else if (modal.classList.contains('work4')) currentWork = 4;
-    else if (modal.classList.contains('work5')) currentWork = 5;
+    const workMatch = Array.from(modal.classList).find(c => /^work[1-9]\d*$/.test(c));
+    if (workMatch) {
+      currentWork = parseInt(workMatch.replace('work',''), 10);
+    }
     
     // Special handling for about modal
     if (modal.classList.contains('about')) {
@@ -207,6 +358,8 @@ export const openModal = (modalClass, isNavigating = false) => {
       console.log(`Modal opened with scale animation: ${modalClass}`);
     }
 
+    // Trap focus inside modal
+    trapFocus(modal);
     console.log(`Modal opened successfully: ${modalClass}`);
   } else {
     console.error(`Modal not found for class: .modal.${modalClass}`);
@@ -254,6 +407,7 @@ export const closeModal = (navigate = false, direction = 1, onComplete = null) =
 
         // Reset modal state AFTER all animations are complete
         ModalOpen = false;
+        releaseFocus();
         
         // Show UI controls when modal closes
         showUIControls();
@@ -328,8 +482,7 @@ export const navigateWork = (direction) => {
 
   console.log(`🔄 New work will be: ${newWork}`);
 
-  // Close current modal and open new one
-  closeModal(true, direction === 'next' ? 1 : -1);
+  // Switch directly using openModal (handles instant switch if another is open)
   openModal('work' + newWork, true);
 }
 
@@ -355,21 +508,14 @@ export function initializeModals() {
     gallery: document.querySelector('.modal.gallery')
   };
 
-  // Modal exit button listeners
+  // Delegate listeners will be attached on dynamic creation; attach fallback for any pre-existing modals
   document.querySelectorAll('.modal-exit-button').forEach(button => {
-    button.addEventListener('click', (e) => {
-      e.stopPropagation();
-      closeModal();
-    });
+    button.addEventListener('click', (e) => { e.stopPropagation(); closeModal(); });
   });
-
-  // Navigation button listeners
   document.querySelectorAll('.nav-arrow').forEach(button => {
     button.addEventListener('click', (e) => {
       e.stopPropagation();
-      console.log('🔄 Navigation arrow clicked:', button.textContent.trim());
       const direction = button.textContent.trim() === '←' ? 'prev' : 'next';
-      console.log('🔄 Direction determined:', direction);
       navigateWork(direction);
     });
   });
@@ -492,7 +638,7 @@ export function toggleDarkMode() {
  */
 export function initializeHomeButton(resetCameraFunction) {
   homeButton = document.getElementById('home-button');
-
+  
   if (homeButton) {
     homeButton.addEventListener('click', () => {
       console.log('🏠 Home button clicked - resetting camera');
@@ -508,11 +654,11 @@ export function initializeHomeButton(resetCameraFunction) {
  */
 export function initializeDarkModeButton() {
   darkModeButton = document.getElementById('dark-mode-button');
-
+  
   if (darkModeButton) {
     // Set initial state
     darkModeButton.innerHTML = isDarkMode ?'<img src="https://img.icons8.com/ios-filled/24/000000/light-off.png" alt="Theme Toggle" />' : '<img src="https://img.icons8.com/ios-filled/24/000000/light-on.png" alt="Theme Toggle" />';
-
+    
     darkModeButton.addEventListener('click', () => {
       console.log('🌙/☀️ Dark mode button clicked - toggling mode');
       toggleDarkMode();
@@ -520,9 +666,58 @@ export function initializeDarkModeButton() {
 
     // Show the dark mode button by default
     showDarkModeButton();
-
+    
     console.log('Dark mode button initialized');
   }
+}
+
+// =============================================================================
+// FOCUS TRAP
+// =============================================================================
+let lastFocusedElement = null;
+let focusTrapHandler = null;
+
+function getFocusable(modal) {
+  return modal.querySelectorAll(
+    'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+  );
+}
+
+export function trapFocus(modal) {
+  try {
+    lastFocusedElement = document.activeElement;
+    const focusables = Array.from(getFocusable(modal));
+    if (focusables.length === 0) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (first) first.focus();
+
+    focusTrapHandler = (e) => {
+      if (e.key !== 'Tab') return;
+      if (focusables.length === 0) { e.preventDefault(); return; }
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener('keydown', focusTrapHandler);
+  } catch (err) {
+    console.warn('Focus trap initialization failed:', err);
+  }
+}
+
+export function releaseFocus() {
+  if (focusTrapHandler) {
+    document.removeEventListener('keydown', focusTrapHandler);
+    focusTrapHandler = null;
+  }
+  if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+    try { lastFocusedElement.focus(); } catch {}
+  }
+  lastFocusedElement = null;
 }
 
 /**

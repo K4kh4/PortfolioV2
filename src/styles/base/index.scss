@@ -1,0 +1,5 @@
+// Base styles index - imports all base styles
+// IMPORTANT: Variables must be imported first to define all SCSS variables
+@import './variables';
+@import './reset';
+@import './typography';

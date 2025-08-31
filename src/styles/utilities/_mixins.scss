@@ -1,0 +1,218 @@
+// =============================================================================
+// MIXINS LIBRARY
+// =============================================================================
+
+// Button Mixins
+@mixin btn-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-md $spacing-lg;
+  border: 2px solid transparent;
+  border-radius: $radius-xl;
+  background: transparent;
+  color: $color-text;
+  font-family: $font-primary;
+  font-weight: $font-weight-normal;
+  cursor: pointer;
+  transition: all $transition-normal;
+  text-decoration: none;
+
+  &:hover {
+    transform: scale($animation-scale-hover);
+  }
+
+  &:active {
+    transform: scale($animation-scale-active);
+  }
+
+  &:focus {
+    outline: 2px solid $color-primary;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+@mixin btn-primary {
+  background: $color-primary;
+  border-color: $color-primary;
+  color: $color-bg;
+
+  &:hover {
+    background: lighten($color-primary, 10%);
+    border-color: lighten($color-primary, 10%);
+    box-shadow: $shadow-glow;
+  }
+}
+
+@mixin btn-secondary {
+  border-color: $color-secondary;
+  color: $color-secondary;
+
+  &:hover {
+    background: $color-secondary;
+    color: $color-bg;
+  }
+}
+
+// Layout Mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+@mixin flex-column-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+// Position Mixins
+@mixin pos-absolute($top: auto, $right: auto, $bottom: auto, $left: auto) {
+  position: absolute;
+  top: $top;
+  right: $right;
+  bottom: $bottom;
+  left: $left;
+}
+
+@mixin pos-fixed($top: auto, $right: auto, $bottom: auto, $left: auto) {
+  position: fixed;
+  top: $top;
+  right: $right;
+  bottom: $bottom;
+  left: $left;
+}
+
+// Size Mixins
+@mixin size($width, $height: $width) {
+  width: $width;
+  height: $height;
+}
+
+@mixin square($size) {
+  width: $size;
+  height: $size;
+}
+
+// Animation Mixins
+@mixin transition($properties: all, $duration: $transition-normal, $easing: $animation-easing) {
+  transition: $properties $duration $easing;
+}
+
+@mixin transform-scale($scale: 1) {
+  transform: scale($scale);
+}
+
+// Responsive Mixins
+@mixin mq($breakpoint) {
+  @media (max-width: $breakpoint) {
+    @content;
+  }
+}
+
+@mixin mq-min($breakpoint) {
+  @media (min-width: $breakpoint) {
+    @content;
+  }
+}
+
+// Utility Mixins
+@mixin scrollbar($track: $color-scrollbar-track, $thumb: $color-scrollbar-thumb, $thumb-hover: $color-scrollbar-thumb-hover) {
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $track;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $thumb;
+    border-radius: 4px;
+
+    &:hover {
+      background: $thumb-hover;
+    }
+  }
+
+  scrollbar-width: thin;
+  scrollbar-color: $thumb $track;
+}
+
+@mixin hide-scrollbars {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+// Text Utilities
+@mixin text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin text-multiline($lines: 2) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// Image Utilities
+@mixin img-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@mixin img-contain {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+// Grid Utilities
+@mixin grid-cols($columns: 12, $gap: $grid-gap) {
+  display: grid;
+  grid-template-columns: repeat($columns, 1fr);
+  gap: $gap;
+}
+
+// Container
+@mixin container {
+  width: 100%;
+  max-width: $container-max-width;
+  margin: 0 auto;
+  padding: 0 $spacing-md;
+
+  @include mq($bp-sm) {
+    padding: 0 $spacing-lg;
+  }
+}

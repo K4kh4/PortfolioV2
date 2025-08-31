@@ -1,0 +1,159 @@
+// =============================================================================
+// RESPONSIVE DESIGN SYSTEM
+// =============================================================================
+
+// Extra Small (Mobile)
+@include mq($bp-xs) {
+  // Modal adjustments
+  .modal {
+    &.active {
+      padding: $spacing-sm;
+    }
+  }
+
+  // Work modal container responsive
+  .work-modal-container {
+    flex-direction: column;
+  }
+
+  // Logo column responsive
+  .logo-column {
+    flex: none;
+    padding: $spacing-lg $spacing-md;
+    max-height: 50vh;
+    gap: $spacing-md;
+  }
+
+  // Brand name responsive
+  .brand-name {
+    font-size: 1.8rem;
+  }
+
+  // Tagline responsive
+  .tagline {
+    font-size: 0.8rem;
+  }
+
+  // Project title responsive
+  .project-title {
+    font-size: 1.5rem;
+    margin-bottom: $spacing-md;
+  }
+
+  // Project description responsive
+  .project-description {
+    font-size: 0.9rem;
+    margin-bottom: $spacing-sm;
+  }
+
+  // Navigation responsive
+  .navigation {
+    margin-top: auto;
+  }
+
+  // Media column responsive
+  .media-column {
+    height: 50vh;
+    padding: $spacing-sm;
+  }
+
+  // Media item responsive
+  .media-item iframe {
+    height: 200px;
+  }
+}
+
+// Small (Tablet)
+@include mq($bp-sm) {
+  .logo-column {
+    flex: 0 0 350px;
+    padding: $spacing-xl $spacing-lg;
+  }
+
+  .brand-name {
+    font-size: 2.2rem;
+  }
+
+  .project-title {
+    font-size: 1.7rem;
+  }
+}
+
+// Medium (Desktop)
+@include mq($bp-md) {
+  .logo-column {
+    flex: 0 0 400px;
+  }
+
+  .brand-name {
+    font-size: 2.5rem;
+  }
+
+  .project-title {
+    font-size: 1.9rem;
+  }
+}
+
+// Large (Large Desktop)
+@include mq($bp-lg) {
+  .logo-column {
+    flex: 0 0 450px;
+  }
+
+  .brand-name {
+    font-size: 3rem;
+  }
+
+  .project-title {
+    font-size: 2.2rem;
+  }
+}
+
+// Extra Large
+@include mq-min($bp-xl) {
+  .container {
+    max-width: $container-max-width;
+  }
+}
+
+// =============================================================================
+// ACCESSIBILITY IMPROVEMENTS
+// =============================================================================
+
+// Reduce motion for users who prefer it
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .modal {
+    border: 2px solid $color-text;
+  }
+
+  .enter-button,
+  .nav-arrow,
+  .modal-exit-button {
+    border-width: 3px;
+  }
+}
+
+// Print styles
+@media print {
+  .modal,
+  .home-button,
+  .dark-mode-button {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+}

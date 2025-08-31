@@ -1,0 +1,24 @@
+// =============================================================================
+// EXPERIENCE LAYOUT
+// =============================================================================
+
+#experience {
+  @include pos-fixed(0, 0, 0, 0);
+  overflow: hidden;
+  z-index: $z-base;
+
+  #experience-canvas {
+    @include size(100%);
+    pointer-events: auto;
+  }
+}
+
+// =============================================================================
+// RESPONSIVE EXPERIENCE
+// =============================================================================
+
+@include mq($bp-sm) {
+  #experience {
+    // Mobile optimizations if needed
+  }
+}

@@ -1,0 +1,113 @@
+// =============================================================================
+// TYPOGRAPHY SYSTEM
+// =============================================================================
+
+// Headings
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: $font-weight-bold;
+  line-height: $line-height-tight;
+  color: $color-text;
+}
+
+h1 {
+  font-size: $font-size-xxl;
+  letter-spacing: -2px;
+}
+
+h2 {
+  font-size: $font-size-xl;
+  letter-spacing: -1px;
+}
+
+h3 {
+  font-size: $font-size-lg;
+}
+
+// Paragraphs
+p {
+  margin-bottom: $spacing-md;
+  line-height: $line-height-loose;
+}
+
+// Links
+a {
+  color: $color-primary;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: $color-secondary;
+  }
+}
+
+// Lists
+ul, ol {
+  margin-bottom: $spacing-md;
+}
+
+// List items
+li {
+  margin-bottom: $spacing-sm;
+}
+
+// Blockquotes
+blockquote {
+  margin: $spacing-lg 0;
+  padding-left: $spacing-lg;
+  border-left: 3px solid $color-primary;
+  font-style: italic;
+  color: $color-muted;
+}
+
+// Code blocks
+code {
+  background-color: $color-surface;
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $radius-sm;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 0.9em;
+}
+
+// Preformatted text
+pre {
+  background-color: $color-surface;
+  padding: $spacing-md;
+  border-radius: $radius-md;
+  overflow-x: auto;
+  margin-bottom: $spacing-md;
+
+  code {
+    background: none;
+    padding: 0;
+  }
+}
+
+// Small text
+small {
+  font-size: 0.85em;
+  color: $color-muted;
+}
+
+// Strong text
+strong, b {
+  font-weight: $font-weight-bold;
+}
+
+// Emphasis
+em, i {
+  font-style: italic;
+}
+
+// Abbreviations
+abbr {
+  border-bottom: 1px dotted $color-muted;
+  cursor: help;
+}
+
+// Horizontal rules
+hr {
+  border: none;
+  height: 1px;
+  background-color: $color-surface;
+  margin: $spacing-xl 0;
+}

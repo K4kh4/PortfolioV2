@@ -1,0 +1,442 @@
+// =============================================================================
+// MODAL SYSTEM
+// =============================================================================
+
+// Base Modal
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: $color-modal-overlay;
+  z-index: $z-modal;
+  opacity: 0;
+  transition: opacity $transition-normal;
+
+  &.active {
+    display: flex;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  &:not(.active) {
+    pointer-events: none;
+  }
+}
+
+// =============================================================================
+// WORK MODALS
+// =============================================================================
+
+.work-modal-container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  font-family: $font-primary;
+  color: $color-text;
+}
+
+.logo-column {
+  flex: 0 0 450px;
+  padding: $spacing-xxl $spacing-xl;
+  background-color: $color-bg;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: $spacing-xl;
+}
+
+.brand-name {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  line-height: 0.9;
+  margin-bottom: $spacing-sm;
+  text-transform: uppercase;
+  letter-spacing: -2px;
+}
+
+.tagline {
+  font-size: $font-size-base;
+  color: $color-muted;
+  font-weight: $font-weight-normal;
+  line-height: $line-height-normal;
+}
+
+.navigation {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: auto;
+}
+
+.project-content {
+  flex: 1;
+  overflow-y: auto;
+
+  @include scrollbar();
+}
+
+.project-title {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-lg;
+  color: $color-text;
+  line-height: $line-height-tight;
+}
+
+.project-description {
+  font-size: $font-size-base;
+  line-height: $line-height-loose;
+  color: $color-muted;
+  margin-bottom: $spacing-md;
+}
+
+.credits {
+  margin-bottom: $spacing-lg;
+
+  .credit-item {
+    font-size: $font-size-sm;
+    color: $color-muted;
+    margin-bottom: $spacing-xs;
+  }
+}
+
+.media-column {
+  flex: 1;
+  background-color: $color-surface-dark;
+  overflow-y: auto;
+  padding: $spacing-md;
+
+  @include scrollbar();
+}
+
+.media-grid {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.media-item {
+  position: relative;
+  border-radius: $radius-md;
+  overflow: hidden;
+  transition: transform $transition-normal;
+
+  &:hover {
+    transform: scale(1.02);
+  }
+
+  img,
+  iframe {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  iframe {
+    border: none;
+    border-radius: $radius-md;
+  }
+}
+
+// =============================================================================
+// SPECIALTY MODALS
+// =============================================================================
+
+// About Modal
+.about {
+  background-color: $color-about-bg;
+  padding: 0;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  font-family: $font-primary;
+
+  .modal-title,
+  h1, h2 {
+    color: $color-text-dark;
+  }
+
+  p {
+    color: $color-text-dark;
+  }
+
+  .about-content {
+    transform: translateY(70%);
+    width: 50%;
+    max-width: 400px;
+    padding: $spacing-xxl;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    z-index: $z-modal + 1;
+    text-align: left;
+    background: transparent;
+    margin-left: 5%;
+    margin-bottom: 5%;
+    position: relative;
+  }
+
+  h1 {
+    font-size: $font-size-xxl;
+    margin-bottom: $spacing-xs;
+    color: $color-text-dark;
+  }
+
+  h2 {
+    font-size: $font-size-lg;
+    margin-bottom: $spacing-xs;
+    color: $color-text-dark;
+  }
+
+  p {
+    font-size: $font-size-xs;
+    line-height: $line-height-loose;
+    color: $color-text-dark;
+    margin-bottom: $spacing-sm;
+  }
+}
+
+// Floating Images Container
+.floating-images {
+  position: absolute;
+  bottom: 25%;
+  right: 20%;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.floating-image {
+  position: absolute;
+  pointer-events: none;
+  cursor: default;
+
+  img {
+    width: auto;
+    height: auto;
+    max-width: none;
+    display: block;
+    cursor: default;
+    pointer-events: none;
+  }
+}
+
+// Background Layer - behind everything
+.background-layer {
+  z-index: 1;
+}
+
+// Building image positioning
+.floating-image[data-speed="0.6"] {
+  bottom: 25%;
+  right: 0%;
+  opacity: 1;
+
+  img {
+    height: 300px;
+  }
+}
+
+// Star image positioning
+.floating-image[data-speed="0.0"] {
+  bottom: 10%;
+  right: 35%;
+  opacity: 1;
+  z-index: 5;
+
+  img {
+    height: 150px;
+  }
+}
+//books image positioning
+.floating-image[data-speed="0.4"] {
+  bottom: -5%;
+  right: 35%;
+  opacity: 1;
+  z-index: 1;
+
+  img {
+    height: 200px;
+  }
+}
+
+// Main Layer - Natia's portrait
+.main-layer {
+  z-index: 2;
+  top: 65%;
+  right: 10%;
+}
+
+.floating-image[data-speed="0.2"] img {
+  height: 400px;
+}
+
+// Foreground Layer - floating in front
+.foreground-layer {
+  z-index: 3;
+}
+
+// Blue berry image
+.floating-image[data-speed="0.1"] {
+  bottom: -10%;
+  right: 15%;
+  opacity: 1;
+
+  img {
+    height: 170px;
+  }
+}
+
+// Medusa image
+.floating-image[data-speed="0.3"] {
+  bottom: 10%;
+  right: 20%;
+  opacity: 1;
+  z-index: 1;
+
+  img {
+    height: 350px;
+  }
+}
+
+// Boyfriend image
+.floating-image[data-speed="0.5"] {
+  bottom: 10%;
+  right: 5%;
+  opacity: 1;
+  z-index: 1;
+
+  img {
+    height: 550px;
+  }
+}
+
+// Contact Modal
+.contact {
+  padding: $spacing-xxl;
+  background-color: $color-bg;
+  color: $color-text;
+  font-family: $font-system;
+
+  .modal-title {
+    font-size: $font-size-xxl;
+    font-weight: $font-weight-bold;
+    margin-bottom: $spacing-lg;
+    text-transform: uppercase;
+    color: $color-text;
+  }
+
+  h2 {
+    font-size: $font-size-lg;
+    margin-bottom: $spacing-md;
+    color: $color-text;
+  }
+
+  p {
+    font-size: $font-size-base;
+    line-height: $line-height-loose;
+    color: $color-muted;
+    margin-bottom: $spacing-md;
+  }
+}
+
+// Gallery Modal
+.gallery {
+  padding: $spacing-xxl $spacing-xl;
+  background-color: $color-bg;
+  color: $color-text;
+  font-family: $font-primary;
+  overflow-y: auto;
+
+  @include scrollbar();
+
+  .gallery-title {
+    font-size: $font-size-xxl;
+    font-weight: $font-weight-bold;
+    margin-bottom: $spacing-xl;
+    text-transform: uppercase;
+    color: $color-text;
+    text-align: center;
+  }
+}
+
+// =============================================================================
+// LOADING MODAL
+// =============================================================================
+
+.loading-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: $color-loading-bg;
+  z-index: $z-loading;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-primary;
+}
+
+.loading-content {
+  text-align: center;
+}
+
+#loading-text {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-loading-text;
+  margin: 0;
+  margin-bottom: $spacing-xxl;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  animation: fadeInOut 1.5s ease-in-out;
+}
+
+.loading-instructions {
+  margin-top: $spacing-lg;
+  font-size: $font-size-sm;
+  color: $color-loading-instructions;
+  text-align: center;
+  font-weight: $font-weight-normal;
+  letter-spacing: 0.5px;
+  opacity: 0.8;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+// Progress Bar
+.progress-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: $spacing-xl;
+  width: 100%;
+  max-width: 400px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: rgba($color-loading-text, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: $spacing-sm;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, $color-primary, $color-secondary);
+  width: 0%;
+  transition: width $transition-fast;
+  border-radius: 4px;
+}
+
+.progress-text {
+  font-size: $font-size-base;
+  color: $color-loading-instructions;
+  font-weight: $font-weight-normal;
+  letter-spacing: 1px;
+}
