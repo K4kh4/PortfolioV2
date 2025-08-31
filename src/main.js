@@ -43,8 +43,126 @@ import {
 } from './modal.js';
 
 // =============================================================================
-// GLOBAL VARIABLES
+// GLOBAL VARIABLES & CONSTANTS
 // =============================================================================
+
+// Performance and interaction constants
+const CAMERA_THRESHOLDS = {
+  NOTEBOOK_DISTANCE: 3,
+  POSITION_DISTANCE: 5,
+  CLOSE_DISTANCE: 0.00001
+};
+
+const PERFORMANCE_CONFIG = {
+  RAYCAST_INTERVAL: 33, // 30fps for interactions (33ms)
+  MOBILE_RAYCAST_INTERVAL: 50, // 20fps for mobile (50ms)
+  MOBILE_PIXEL_RATIO_MAX: 1.5
+};
+
+// Mobile detection
+const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+// Application state management
+class PortfolioApp {
+  constructor() {
+    this.animationId = null;
+    this.isDestroyed = false;
+    this.lastRaycastTime = 0;
+    this.raycastInterval = isMobile ? PERFORMANCE_CONFIG.MOBILE_RAYCAST_INTERVAL : PERFORMANCE_CONFIG.RAYCAST_INTERVAL;
+    
+    // Interaction state management
+    this.isNavigating = false;
+    this.isMouseOverUI = false;
+    this.mouseDownPosition = { x: 0, y: 0 };
+    this.navigationThreshold = 5; // pixels - minimum movement to consider as navigation
+  }
+
+  destroy() {
+    console.log('🧹 Cleaning up Portfolio App...');
+    this.isDestroyed = true;
+    
+    // Stop animation loop
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId);
+      this.animationId = null;
+    }
+    
+    // Cleanup Three.js resources
+    if (renderer) {
+      renderer.dispose();
+      renderer.forceContextLoss();
+    }
+    
+    if (scene) {
+      // Dispose of all geometries and materials
+      scene.traverse((object) => {
+        if (object.geometry) {
+          object.geometry.dispose();
+        }
+        if (object.material) {
+          if (Array.isArray(object.material)) {
+            object.material.forEach(material => material.dispose());
+          } else {
+            object.material.dispose();
+          }
+        }
+      });
+      scene.clear();
+    }
+    
+    // Remove event listeners
+    window.removeEventListener("mousemove", OnMouseMove);
+    window.removeEventListener("mousedown", OnMouseDown);
+    window.removeEventListener("mouseup", OnMouseUp);
+    window.removeEventListener("resize", OnResize);
+    window.removeEventListener("click", OnClick);
+    
+    console.log('✅ Portfolio App cleanup completed');
+  }
+}
+
+// Global app instance
+let portfolioApp = new PortfolioApp();
+
+/**
+ * Check if mouse is over any UI element that should block raycasting
+ * @param {number} clientX - Mouse X position
+ * @param {number} clientY - Mouse Y position
+ * @returns {boolean} - True if mouse is over UI element
+ */
+function isMouseOverUI(clientX, clientY) {
+  const uiElements = [
+    document.getElementById('home-button'),
+    document.getElementById('dark-mode-button'),
+    document.querySelector('.modal-exit-button'),
+    document.querySelector('.nav-arrow'),
+    document.querySelector('.enter-button')
+  ].filter(Boolean); // Remove null elements
+  
+  for (const element of uiElements) {
+    if (element && element.style.display !== 'none') {
+      const rect = element.getBoundingClientRect();
+      if (clientX >= rect.left && clientX <= rect.right && 
+          clientY >= rect.top && clientY <= rect.bottom) {
+        return true;
+      }
+    }
+  }
+  
+  return false;
+}
+
+/**
+ * Calculate distance between two points
+ * @param {Object} point1 - First point with x, y properties
+ * @param {Object} point2 - Second point with x, y properties
+ * @returns {number} - Distance in pixels
+ */
+function calculateDistance(point1, point2) {
+  const dx = point2.x - point1.x;
+  const dy = point2.y - point1.y;
+  return Math.sqrt(dx * dx + dy * dy);
+}
 
 // Reference to the 3D notebook object that opens to show work buttons
 let notebookObject;
@@ -407,21 +525,65 @@ function checkIfComplete() {
   }
 }
 
-Object.entries(textureMap).forEach(([key, value]) => {
-  const dayTexture = textureLoader.load(
-    value.day,
-    () => {
-      texturesLoaded++;
-      loadedAssets++;
-      console.log(`Texture loaded: ${key} (${texturesLoaded}/${totalTextures})`);
-      updateProgress();
-      checkIfComplete();
-    }
-  );
-  dayTexture.flipY = false;
-  dayTexture.colorSpace = THREE.SRGBColorSpace;
-  loadedTexture[key].day = dayTexture;
-});
+/**
+ * Load textures with error handling and mobile optimization
+ */
+function loadTextures() {
+  Object.entries(textureMap).forEach(([key, value]) => {
+    const dayTexture = textureLoader.load(
+      value.day,
+      // onLoad
+      (texture) => {
+        texturesLoaded++;
+        loadedAssets++;
+        console.log(`✅ Texture loaded: ${key} (${texturesLoaded}/${totalTextures})`);
+        
+        // Optimize texture for mobile
+        if (isMobile) {
+          texture.minFilter = THREE.LinearFilter;
+          texture.magFilter = THREE.LinearFilter;
+          texture.generateMipmaps = false;
+        }
+        
+        updateProgress();
+        checkIfComplete();
+      },
+      // onProgress
+      (progress) => {
+        console.log(`📥 Loading texture ${key}: ${Math.round((progress.loaded / progress.total) * 100)}%`);
+      },
+      // onError
+      (error) => {
+        console.error(`❌ Failed to load texture ${key}:`, error);
+        texturesLoaded++; // Still count as "loaded" to prevent hanging
+        loadedAssets++;
+        
+        // Create fallback colored texture
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = 1;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#333333'; // Dark gray fallback
+        ctx.fillRect(0, 0, 1, 1);
+        
+        const fallbackTexture = new THREE.CanvasTexture(canvas);
+        fallbackTexture.flipY = false;
+        fallbackTexture.colorSpace = THREE.SRGBColorSpace;
+        loadedTexture[key].day = fallbackTexture;
+        
+        console.log(`🔄 Created fallback texture for ${key}`);
+        updateProgress();
+        checkIfComplete();
+      }
+    );
+    
+    dayTexture.flipY = false;
+    dayTexture.colorSpace = THREE.SRGBColorSpace;
+    loadedTexture[key].day = dayTexture;
+  });
+}
+
+// Start texture loading
+loadTextures();
 
 // =============================================================================
 // MODEL LOADING AND SCENE SETUP
@@ -434,79 +596,249 @@ dracoLoader.setDecoderPath('/draco/');
 // Configure GLTF loader with DRACO support
 const loader = new GLTFLoader();
 loader.setDRACOLoader(dracoLoader);
-// Load the main 3D model and configure all its components
-loader.load("/models/Room_V1-Compresed-v1.glb", (gltf) => {
+
+/**
+ * Create fallback 2D portfolio interface
+ */
+function createFallbackInterface() {
+  console.log('🔄 Creating fallback 2D interface...');
+  
+  const fallbackHTML = `
+    <div class="fallback-portfolio" style="
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #0b0d10;
+      color: #e6eef8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Helvetica', sans-serif;
+      z-index: 10001;
+    ">
+      <div style="text-align: center; max-width: 600px; padding: 2rem;">
+        <h1 style="font-size: 3rem; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: -2px;">
+          NATIA<br>KALANDIA
+        </h1>
+        <p style="font-size: 1rem; color: #9fb0c3; margin-bottom: 3rem;">
+          Personality hire copywriter
+        </p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+          <button onclick="openModal('work1')" style="
+            background: rgba(159, 249, 255, 0.1);
+            border: 2px solid rgba(159, 249, 255, 0.5);
+            color: #e6eef8;
+            padding: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+          " onmouseover="this.style.background='rgba(159, 249, 255, 0.2)'" onmouseout="this.style.background='rgba(159, 249, 255, 0.1)'">
+            N26 Banking
+          </button>
+          
+          <button onclick="openModal('work2')" style="
+            background: rgba(159, 249, 255, 0.1);
+            border: 2px solid rgba(159, 249, 255, 0.5);
+            color: #e6eef8;
+            padding: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+          " onmouseover="this.style.background='rgba(159, 249, 255, 0.2)'" onmouseout="this.style.background='rgba(159, 249, 255, 0.1)'">
+            Plastic Fischer
+          </button>
+          
+          <button onclick="openModal('work3')" style="
+            background: rgba(159, 249, 255, 0.1);
+            border: 2px solid rgba(159, 249, 255, 0.5);
+            color: #e6eef8;
+            padding: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+          " onmouseover="this.style.background='rgba(159, 249, 255, 0.2)'" onmouseout="this.style.background='rgba(159, 249, 255, 0.1)'">
+            Norse Project
+          </button>
+          
+          <button onclick="openModal('work4')" style="
+            background: rgba(159, 249, 255, 0.1);
+            border: 2px solid rgba(159, 249, 255, 0.5);
+            color: #e6eef8;
+            padding: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+          " onmouseover="this.style.background='rgba(159, 249, 255, 0.2)'" onmouseout="this.style.background='rgba(159, 249, 255, 0.1)'">
+            Dr. Martens
+          </button>
+          
+          <button onclick="openModal('work5')" style="
+            background: rgba(159, 249, 255, 0.1);
+            border: 2px solid rgba(159, 249, 255, 0.5);
+            color: #e6eef8;
+            padding: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+          " onmouseover="this.style.background='rgba(159, 249, 255, 0.2)'" onmouseout="this.style.background='rgba(159, 249, 255, 0.1)'">
+            IKEA
+          </button>
+          
+          <button onclick="openModal('about')" style="
+            background: rgba(159, 249, 255, 0.1);
+            border: 2px solid rgba(159, 249, 255, 0.5);
+            color: #e6eef8;
+            padding: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+          " onmouseover="this.style.background='rgba(159, 249, 255, 0.2)'" onmouseout="this.style.background='rgba(159, 249, 255, 0.1)'">
+            About Me
+          </button>
+        </div>
+        
+        <p style="font-size: 0.9rem; color: #666; margin-top: 2rem;">
+          3D experience unavailable - using fallback interface
+        </p>
+      </div>
+    </div>
+  `;
+  
+  // Hide the 3D canvas and loading modal
+  const canvas = document.getElementById('experience-canvas');
+  const loadingModal = document.getElementById('loading-modal');
+  if (canvas) canvas.style.display = 'none';
+  if (loadingModal) loadingModal.style.display = 'none';
+  
+  // Add fallback interface
+  document.body.insertAdjacentHTML('beforeend', fallbackHTML);
+  
+  // Initialize modals for fallback interface
+  initializeModals();
+  
+  console.log('✅ Fallback interface created successfully');
+}
+
+/**
+ * Load the main 3D model with comprehensive error handling
+ */
+function loadModel() {
+  console.log('🏠 Loading 3D model...');
+  
+  loader.load(
+    "/models/Room_V1-Compresed-v1.glb",
+    // onLoad - Success callback
+    (gltf) => {
+      console.log('✅ 3D Model loaded successfully!');
+      setupScene(gltf);
+    },
+    // onProgress - Progress callback
+    (progress) => {
+      if (progress.lengthComputable) {
+        const percentComplete = Math.round((progress.loaded / progress.total) * 100);
+        console.log(`📥 Loading model: ${percentComplete}%`);
+      }
+    },
+    // onError - Error callback
+    (error) => {
+      console.error('❌ Failed to load 3D model:', error);
+      console.log('🔄 Switching to fallback 2D interface...');
+      
+      // Create fallback interface
+      createFallbackInterface();
+      
+      // Still mark as "loaded" to prevent infinite loading
+      modelLoaded = true;
+      loadedAssets++;
+      updateProgress();
+    }
+  );
+}
+
+/**
+ * Setup the 3D scene after model loads successfully
+ */
+function setupScene(gltf) {
   gltf.scene.traverse((child) => {
     if (child.isMesh) {
       // Apply appropriate textures to different room sections
       if (child.name.includes("First_")) {
-        const material = new THREE.MeshBasicMaterial()
-        material.map = loadedTexture.First.day
-        child.material = material
+        const material = new THREE.MeshBasicMaterial();
+        material.map = loadedTexture.First.day;
+        child.material = material;
       }
 
-      if (child.name.includes("Second_Room")) {//change the fucking name
-        const material = new THREE.MeshBasicMaterial()
-        material.map = loadedTexture.Second.day
-        child.material = material
+      if (child.name.includes("Second_Room")) { // TODO: Rename in 3D model to be more descriptive
+        const material = new THREE.MeshBasicMaterial();
+        material.map = loadedTexture.Second.day;
+        child.material = material;
       }
       if (child.name.includes("Third")) {
-        const material = new THREE.MeshBasicMaterial()
-        material.map = loadedTexture.Third.day
-        child.material = material
+        const material = new THREE.MeshBasicMaterial();
+        material.map = loadedTexture.Third.day;
+        child.material = material;
       }
       if (child.name.includes("Fourth")) {
-        const material = new THREE.MeshBasicMaterial()
-        material.map = loadedTexture.Fourth.day
+        const material = new THREE.MeshBasicMaterial();
+        material.map = loadedTexture.Fourth.day;
         material.transparent = true;
         material.alphaTest = 0.5;
-        child.material = material
+        child.material = material;
       }
       if (child.name.includes("Fifth")) {
-        const material = new THREE.MeshBasicMaterial()
-        material.map = loadedTexture.Fifth.day
-        child.material = material
+        const material = new THREE.MeshBasicMaterial();
+        material.map = loadedTexture.Fifth.day;
+        child.material = material;
       }
       if (child.name.includes("Book")) {
-        const material = new THREE.MeshBasicMaterial()
-        material.map = loadedTexture.books.day
-        child.material = material
+        const material = new THREE.MeshBasicMaterial();
+        material.map = loadedTexture.books.day;
+        child.material = material;
       }
 
+      // Optimize texture filtering
       if (child.material.map) {
         child.material.map.minFilter = THREE.LinearFilter;
       }
-      // setting up layers 
 
-
+      // Setup interactive objects
       if (child.name.includes("Raycaster")) {
         raycastObjects.push(child);
       }
+      
       if (child.name.includes("Hover")) {
         child.userData.initialPosition = new THREE.Vector3().copy(child.position);
         child.userData.initialRotation = new THREE.Euler().copy(child.rotation);
         child.userData.initialScale = new THREE.Vector3().copy(child.scale);
         child.userData.isAnimating = false;
       }
+      
       if (child.name.includes("Fourth_notebook_MyWork_Top_Raycaster_Pointer")) {
         notebookObject = child;
-        console.log("notebookObject was added", notebookObject);
+        console.log("📔 Notebook object assigned:", notebookObject.name);
       }
 
       // Check if this object matches any interactive object
       buttonObjects.forEach(interactiveObj => {
         if (child.name.includes(interactiveObj.name)) {
           interactiveObj.object = child;
-          console.log(`Found interactive object: ${interactiveObj.name}`);
+          console.log(`🎯 Found interactive object: ${interactiveObj.name}`);
         }
       });
     }
-  })
-  scene.add(gltf.scene)
-  //add ambient light with light blue tint
-
-
-
+  });
+  
+  scene.add(gltf.scene);
 
   // Log which interactive objects were found
   logInteractiveObjectsStatus();
@@ -520,17 +852,29 @@ loader.load("/models/Room_V1-Compresed-v1.glb", (gltf) => {
   // Mark model as loaded and check completion
   modelLoaded = true;
   loadedAssets++;
-  console.log('🏠 3D Model loaded successfully!');
+  console.log('✅ 3D Model setup completed successfully!');
   updateProgress();
 
-  // Check completion multiple times to ensure objects are assigned
+  // Check completion with timeout to prevent infinite loops
+  let checkAttempts = 0;
+  const maxCheckAttempts = 50; // 5 seconds max
+  
   const checkInterval = setInterval(() => {
+    checkAttempts++;
     checkIfComplete();
-    if (objectsAssigned) {
+    
+    if (objectsAssigned || checkAttempts >= maxCheckAttempts) {
       clearInterval(checkInterval);
+      if (checkAttempts >= maxCheckAttempts) {
+        console.warn('⚠️ Object assignment check timed out - proceeding anyway');
+        onLoadComplete();
+      }
     }
   }, 100);
-})
+}
+
+// Start model loading
+loadModel();
 
 // =============================================================================
 // RENDERER AND CAMERA SETUP
@@ -541,15 +885,22 @@ let renderer = null;
 let controls = null;
 
 /**
- * Initialize the WebGL renderer
+ * Initialize the WebGL renderer with mobile optimization
  */
 function initializeRenderer() {
   renderer = new THREE.WebGLRenderer({
     canvas: canvas,
-    antialias: true
+    antialias: !isMobile, // Disable antialiasing on mobile for performance
+    powerPreference: isMobile ? "low-power" : "high-performance"
   });
+  
   renderer.setSize(sizes.width, sizes.height);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  
+  // Optimize pixel ratio for mobile devices
+  const maxPixelRatio = isMobile ? PERFORMANCE_CONFIG.MOBILE_PIXEL_RATIO_MAX : 2;
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio));
+  
+  console.log(`🎮 Renderer initialized - Mobile: ${isMobile}, PixelRatio: ${renderer.getPixelRatio()}`);
 }
 
 /**
@@ -612,21 +963,97 @@ function OnResize() {
 }
 
 /**
- * Handle mouse movement for raycasting
+ * Handle mouse movement for raycasting and navigation detection
  * @param {MouseEvent} event - Mouse move event
  */
 function OnMouseMove(event) {
-  updatePointer(event);
+  // Update UI hover state
+  portfolioApp.isMouseOverUI = isMouseOverUI(event.clientX, event.clientY);
+  
+  // Check if we're navigating (mouse is down and moved beyond threshold)
+  if (portfolioApp.isNavigating) {
+    const currentPos = { x: event.clientX, y: event.clientY };
+    const distance = calculateDistance(portfolioApp.mouseDownPosition, currentPos);
+    
+    if (distance > portfolioApp.navigationThreshold) {
+      // We're definitely navigating - don't update pointer for raycasting
+      return;
+    }
+  }
+  
+  // Only update pointer if we're not over UI and not navigating
+  if (!portfolioApp.isMouseOverUI && !portfolioApp.isNavigating) {
+    updatePointer(event);
+  }
 }
 
 /**
- * Handle click events on 3D objects
+ * Handle mouse down events to detect navigation start
+ * @param {MouseEvent} event - Mouse down event
  */
-function OnClick() {
+function OnMouseDown(event) {
+  // Only track left mouse button
+  if (event.button === 0) {
+    portfolioApp.isNavigating = true;
+    portfolioApp.mouseDownPosition = { x: event.clientX, y: event.clientY };
+    console.log('🖱️ Mouse down - navigation mode enabled');
+  }
+}
+
+/**
+ * Handle mouse up events to detect navigation end
+ * @param {MouseEvent} event - Mouse up event
+ */
+function OnMouseUp(event) {
+  if (event.button === 0) {
+    const wasNavigating = portfolioApp.isNavigating;
+    portfolioApp.isNavigating = false;
+    
+    if (wasNavigating) {
+      console.log('🖱️ Mouse up - navigation mode disabled');
+      
+      // Small delay to prevent immediate interaction after navigation
+      setTimeout(() => {
+        // Update pointer position for next interaction
+        if (!portfolioApp.isMouseOverUI) {
+          updatePointer(event);
+        }
+      }, 50);
+    }
+  }
+}
+
+/**
+ * Handle click events on 3D objects with improved interaction rules
+ */
+function OnClick(event) {
   // Prevent scene interactions when modal is open
   if (isModalOpen()) {
     console.log('🚫 Click blocked - modal is open');
     return;
+  }
+  
+  // Prevent interactions if mouse is over UI elements
+  if (portfolioApp.isMouseOverUI) {
+    console.log('🚫 Click blocked - mouse over UI element');
+    return;
+  }
+  
+  // Prevent interactions if we just finished navigating
+  if (portfolioApp.isNavigating) {
+    console.log('🚫 Click blocked - navigation in progress');
+    return;
+  }
+  
+  // Check if this was a navigation click (mouse moved significantly during click)
+  if (event && portfolioApp.mouseDownPosition) {
+    const currentPos = { x: event.clientX, y: event.clientY };
+    const distance = calculateDistance(portfolioApp.mouseDownPosition, currentPos);
+    
+    if (distance > portfolioApp.navigationThreshold) {
+      console.log('🚫 Click blocked - was navigation gesture');
+      return;
+    }
   }
 
   console.log('🎯 Processing scene click');
@@ -704,35 +1131,139 @@ function logInteractiveObjectsStatus() {
 
 // Register event listeners with capture option to ensure they're processed first
 window.addEventListener("mousemove", (e) => { OnMouseMove(e); }, { passive: true });
+window.addEventListener("mousedown", (e) => { OnMouseDown(e); }, { passive: true });
+window.addEventListener("mouseup", (e) => { OnMouseUp(e); }, { passive: true });
 window.addEventListener("resize", OnResize);
-window.addEventListener("click", OnClick);
+window.addEventListener("click", (e) => { OnClick(e); });
+
+// Add mobile touch support
+if (isMobile) {
+  console.log('📱 Adding mobile touch event listeners');
+  
+  // Touch events for mobile interaction
+  window.addEventListener("touchstart", (e) => {
+    // Prevent default to avoid double-tap zoom
+    if (e.touches.length === 1) {
+      e.preventDefault();
+      const touch = e.touches[0];
+      
+      // Simulate mouse down
+      const mouseDownEvent = new MouseEvent('mousedown', {
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+        button: 0
+      });
+      OnMouseDown(mouseDownEvent);
+      
+      // Convert touch to mouse coordinates for raycasting
+      const mouseMoveEvent = new MouseEvent('mousemove', {
+        clientX: touch.clientX,
+        clientY: touch.clientY
+      });
+      OnMouseMove(mouseMoveEvent);
+    }
+  }, { passive: false });
+  
+  window.addEventListener("touchmove", (e) => {
+    if (e.touches.length === 1) {
+      e.preventDefault();
+      const touch = e.touches[0];
+      
+      // Convert touch to mouse coordinates
+      const mouseMoveEvent = new MouseEvent('mousemove', {
+        clientX: touch.clientX,
+        clientY: touch.clientY
+      });
+      OnMouseMove(mouseMoveEvent);
+    }
+  }, { passive: false });
+  
+  window.addEventListener("touchend", (e) => {
+    if (e.changedTouches.length === 1) {
+      e.preventDefault();
+      const touch = e.changedTouches[0];
+      
+      // Simulate mouse up
+      const mouseUpEvent = new MouseEvent('mouseup', {
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+        button: 0
+      });
+      OnMouseUp(mouseUpEvent);
+      
+      // Trigger click event with position
+      const clickEvent = new MouseEvent('click', {
+        clientX: touch.clientX,
+        clientY: touch.clientY
+      });
+      OnClick(clickEvent);
+    }
+  }, { passive: false });
+  
+  // Prevent context menu on long press
+  window.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+  }, { passive: false });
+}
+
+// Add cleanup handlers for memory management
+window.addEventListener('beforeunload', () => {
+  console.log('🔄 Page unloading - cleaning up resources...');
+  portfolioApp.destroy();
+});
+
+window.addEventListener('pagehide', () => {
+  console.log('🔄 Page hidden - cleaning up resources...');
+  portfolioApp.destroy();
+});
+
+// Handle visibility change for performance
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    console.log('📱 Page hidden - pausing animations');
+    // Could pause animations here if needed
+  } else {
+    console.log('📱 Page visible - resuming animations');
+  }
+});
 
 /**
- * Main animation loop - handles rendering and interactions
+ * Main animation loop - handles rendering and interactions with performance optimization
  */
 let isNotebookOpen = false;
+
+/**
+ * Optimized update function with throttled raycasting
+ */
 const Update = () => {
-  // Always continue the animation loop
-  window.requestAnimationFrame(Update);
+  // Check if app is destroyed
+  if (portfolioApp.isDestroyed) {
+    return;
+  }
+
+  // Continue the animation loop
+  portfolioApp.animationId = requestAnimationFrame(Update);
 
   // Don't do anything if renderer or controls aren't initialized yet
   if (!renderer || !controls) {
     return;
   }
 
-  //check distance between camera and notebook if  its greater than 3  its open  close the notebook and open the resume
+  const now = performance.now();
 
+  // Check distance between camera and notebook - use constants instead of magic numbers
   const distance = controls.target.distanceTo(targetNotebookPosition);
   const distance2 = camera.position.distanceTo(cameraNotebookPosition);
-  if (distance > (3) && isNotebookOpen) {
-    console.log("closing notebook");
+  
+  if (distance > CAMERA_THRESHOLDS.NOTEBOOK_DISTANCE && isNotebookOpen) {
+    console.log("📔 Closing notebook - camera moved away");
     CloseNoteBook();
   }
-  if (distance2 > 5 && isNotebookOpen) {
+  if (distance2 > CAMERA_THRESHOLDS.POSITION_DISTANCE && isNotebookOpen) {
     CloseNoteBook();
   }
 
-  // Always update camera controls - users should be able to move camera even when modal is open
+  // Always update camera controls and render - this should be 60fps
   if (controls && controls.enabled) {
     controls.update();
   }
@@ -740,14 +1271,21 @@ const Update = () => {
     renderer.render(scene, camera);
   }
 
-  // Only perform raycasting and interactions when no modal is open
-  if (!isModalOpen()) {
+  // Only perform raycasting and interactions when conditions are met
+  // Throttle raycasting to improve performance (30fps on desktop, 20fps on mobile)
+  const shouldPerformRaycast = !isModalOpen() && 
+                               !portfolioApp.isMouseOverUI && 
+                               !portfolioApp.isNavigating &&
+                               (now - portfolioApp.lastRaycastTime > portfolioApp.raycastInterval);
+  
+  if (shouldPerformRaycast) {
     // Perform raycasting and handle interactions
     const intersections = performRaycast(camera);
     const intersectionData = handleHoverEffects(intersections, OnHover);
     handleCursorChanges(intersectionData);
-  } else {
-    // Reset cursor when modal is open to prevent hover cursor from sticking
+    portfolioApp.lastRaycastTime = now;
+  } else if (isModalOpen() || portfolioApp.isMouseOverUI || portfolioApp.isNavigating) {
+    // Reset cursor when interactions are blocked
     document.body.style.cursor = "default";
   }
 }
@@ -892,63 +1430,89 @@ function zoomCameraToBoard() {
     ease: 'power2.inOut'
   })
 }
+/**
+ * Handle hover effects on 3D objects with optimized animations
+ * @param {THREE.Object3D} object - The object to animate
+ * @param {boolean} isHovering - Whether the object is being hovered
+ */
 function OnHover(object, isHovering) {
+  // Kill any existing animations to prevent conflicts
   gsap.killTweensOf(object.scale);
   gsap.killTweensOf(object.rotation);
   gsap.killTweensOf(object.position);
-  if (object.scale.x < 0.00001) {
+  
+  // Don't animate objects that are scaled down (hidden)
+  if (object.scale.x < CAMERA_THRESHOLDS.CLOSE_DISTANCE) {
     return;
   }
-  let scalePercentage = 1.15
+  
+  const HOVER_CONFIG = {
+    SCALE_MULTIPLIER: 1.15,
+    ANIMATION_DURATION: 0.2,
+    EASE_IN: 'back.out(3)',
+    EASE_OUT: 'back.out(3)'
+  };
+  
   if (isHovering) {
-
-
+    // Scale up on hover
     gsap.to(object.scale, {
-      x: object.userData.initialScale.x * scalePercentage,
-      y: object.userData.initialScale.y * scalePercentage,
-      z: object.userData.initialScale.z * scalePercentage,
-      duration: 0.2,
-      ease: 'back.out(3)',
-    })
-  }
-  else {
+      x: object.userData.initialScale.x * HOVER_CONFIG.SCALE_MULTIPLIER,
+      y: object.userData.initialScale.y * HOVER_CONFIG.SCALE_MULTIPLIER,
+      z: object.userData.initialScale.z * HOVER_CONFIG.SCALE_MULTIPLIER,
+      duration: HOVER_CONFIG.ANIMATION_DURATION,
+      ease: HOVER_CONFIG.EASE_IN,
+    });
+  } else {
+    // Return to original state
     gsap.to(object.scale, {
       x: object.userData.initialScale.x,
       y: object.userData.initialScale.y,
       z: object.userData.initialScale.z,
-      duration: 0.2,
-      ease: 'back.out(3)',
-
-    })
+      duration: HOVER_CONFIG.ANIMATION_DURATION,
+      ease: HOVER_CONFIG.EASE_OUT,
+    });
+    
     gsap.to(object.rotation, {
       x: object.userData.initialRotation.x,
       y: object.userData.initialRotation.y,
       z: object.userData.initialRotation.z,
-      duration: 0.2,
-      ease: 'back.out(3)',
-
-    })
+      duration: HOVER_CONFIG.ANIMATION_DURATION,
+      ease: HOVER_CONFIG.EASE_OUT,
+    });
+    
     gsap.to(object.position, {
       x: object.userData.initialPosition.x,
       y: object.userData.initialPosition.y,
       z: object.userData.initialPosition.z,
-      duration: 0.2,
-      ease: 'back.out(3s)',
-    })
+      duration: HOVER_CONFIG.ANIMATION_DURATION,
+      ease: HOVER_CONFIG.EASE_OUT,
+    });
   }
 }
-//exrea stuff
+/**
+ * Rotate the seat object with smooth animation
+ */
 function rotateSeat() {
-  const seatObject = buttonObjects.find(obj => obj.name === "Fifth_Seat_Top_Raycaster_Pointer").object;
+  const seatObject = buttonObjects.find(obj => obj.name === "Fifth_Seat_Top_Raycaster_Pointer")?.object;
+  
+  if (!seatObject) {
+    console.warn('⚠️ Seat object not found for rotation');
+    return;
+  }
+  
+  const ROTATION_CONFIG = {
+    DURATION: 1,
+    EASE: 'back.inOut(3)',
+    FULL_ROTATION: Math.PI * 2
+  };
+  
   gsap.to(seatObject.rotation, {
     x: 0,
-    y: seatObject.rotation. y - Math.PI*2,
+    y: seatObject.rotation.y - ROTATION_CONFIG.FULL_ROTATION,
     z: 0,
-    duration: 1,
-    ease: 'back.inOut(3)'
-    ,
-   
-  })
+    duration: ROTATION_CONFIG.DURATION,
+    ease: ROTATION_CONFIG.EASE
+  });
 }
 
 //start update loop

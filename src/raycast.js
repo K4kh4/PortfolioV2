@@ -161,8 +161,11 @@ export function handleCursorChanges(intersectionData) {
     return;
   }
   
+  // Constants for better maintainability
+  const CLOSE_DISTANCE_THRESHOLD = 0.00001;
+  
   // Check if cursor should be pointer (for any interactive object)
-  if (originalObject && originalObject.name.includes("Pointer") && originalObject.scale.x > 0.00001) {
+  if (originalObject && originalObject.name.includes("Pointer") && originalObject.scale.x > CLOSE_DISTANCE_THRESHOLD) {
     document.body.style.cursor = "pointer";
   } else {
     // Only reset hover if we're not over a hoverable object
@@ -187,7 +190,10 @@ export function handleClickEvents(intersections, interactiveObjects, handleObjec
     // Get the hitbox that was clicked
     const hitboxObject = intersections[0].object;
     console.log(`🎯 Closest hitbox: ${hitboxObject.name}`);
-    if (hitboxObject.userData.originalObject.scale.x < 0.00001) {
+    
+    const CLOSE_DISTANCE_THRESHOLD = 0.00001;
+    if (hitboxObject.userData.originalObject.scale.x < CLOSE_DISTANCE_THRESHOLD) {
+      console.log('🎯 Object is scaled down (hidden) - ignoring click');
       return;
     }
     
