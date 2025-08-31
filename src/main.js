@@ -73,6 +73,7 @@ class PortfolioApp {
     // Interaction state management
     this.isNavigating = false;
     this.isMouseOverUI = false;
+    this.currentUIElement = null; // Store the actual UI element under mouse
     this.mouseDownPosition = { x: 0, y: 0 };
     this.navigationThreshold = 5; // pixels - minimum movement to consider as navigation
   }
@@ -125,31 +126,59 @@ class PortfolioApp {
 let portfolioApp = new PortfolioApp();
 
 /**
- * Check if mouse is over any UI element that should block raycasting
- * @param {number} clientX - Mouse X position
- * @param {number} clientY - Mouse Y position
- * @returns {boolean} - True if mouse is over UI element
+ * Check if an element or its parents are UI elements that should block 3D interactions
+ * @param {Element} element - The element to check
+ * @returns {boolean} - True if element is UI
  */
-function isMouseOverUI(clientX, clientY) {
-  const uiElements = [
-    document.getElementById('home-button'),
-    document.getElementById('dark-mode-button'),
-    document.querySelector('.modal-exit-button'),
-    document.querySelector('.nav-arrow'),
-    document.querySelector('.enter-button')
-  ].filter(Boolean); // Remove null elements
+function isUIElement(element) {
+  if (!element) return false;
   
-  for (const element of uiElements) {
-    if (element && element.style.display !== 'none') {
-      const rect = element.getBoundingClientRect();
-      if (clientX >= rect.left && clientX <= rect.right && 
-          clientY >= rect.top && clientY <= rect.bottom) {
-        return true;
-      }
+  // Check if element itself or any parent has UI-related classes/IDs
+  let currentElement = element;
+  while (currentElement && currentElement !== document.body) {
+    // Check for UI element classes and IDs
+    if (currentElement.classList.contains('home-button') ||
+        currentElement.classList.contains('dark-mode-button') ||
+        currentElement.classList.contains('modal-exit-button') ||
+        currentElement.classList.contains('nav-arrow') ||
+        currentElement.classList.contains('enter-button') ||
+        currentElement.classList.contains('loading-modal') ||
+        currentElement.classList.contains('modal') ||
+        currentElement.id === 'home-button' ||
+        currentElement.id === 'dark-mode-button' ||
+        currentElement.id === 'enter-button' ||
+        currentElement.id === 'loading-modal') {
+      return true;
     }
+    
+    // Check for any button or interactive element
+    if (currentElement.tagName === 'BUTTON' || 
+        currentElement.tagName === 'A' ||
+        currentElement.hasAttribute('onclick') ||
+        currentElement.style.cursor === 'pointer') {
+      return true;
+    }
+    
+    currentElement = currentElement.parentElement;
   }
   
   return false;
+}
+
+/**
+ * Get the actual target element from event (works for both mouse and touch)
+ * @param {Event} event - Mouse or touch event
+ * @returns {Element} - The target element
+ */
+function getEventTarget(event) {
+  if (event.type.startsWith('touch')) {
+    // For touch events, use elementFromPoint to get the element under touch
+    const touch = event.touches[0] || event.changedTouches[0];
+    if (touch) {
+      return document.elementFromPoint(touch.clientX, touch.clientY);
+    }
+  }
+  return event.target;
 }
 
 /**
@@ -529,13 +558,13 @@ function checkIfComplete() {
  * Load textures with error handling and mobile optimization
  */
 function loadTextures() {
-  Object.entries(textureMap).forEach(([key, value]) => {
-    const dayTexture = textureLoader.load(
-      value.day,
+Object.entries(textureMap).forEach(([key, value]) => {
+  const dayTexture = textureLoader.load(
+    value.day,
       // onLoad
       (texture) => {
-        texturesLoaded++;
-        loadedAssets++;
+      texturesLoaded++;
+      loadedAssets++;
         console.log(`✅ Texture loaded: ${key} (${texturesLoaded}/${totalTextures})`);
         
         // Optimize texture for mobile
@@ -571,15 +600,15 @@ function loadTextures() {
         loadedTexture[key].day = fallbackTexture;
         
         console.log(`🔄 Created fallback texture for ${key}`);
-        updateProgress();
-        checkIfComplete();
-      }
-    );
+      updateProgress();
+      checkIfComplete();
+    }
+  );
     
-    dayTexture.flipY = false;
-    dayTexture.colorSpace = THREE.SRGBColorSpace;
-    loadedTexture[key].day = dayTexture;
-  });
+  dayTexture.flipY = false;
+  dayTexture.colorSpace = THREE.SRGBColorSpace;
+  loadedTexture[key].day = dayTexture;
+});
 }
 
 // Start texture loading
@@ -837,7 +866,7 @@ function setupScene(gltf) {
       });
     }
   });
-  
+
   scene.add(gltf.scene);
 
   // Log which interactive objects were found
@@ -967,8 +996,10 @@ function OnResize() {
  * @param {MouseEvent} event - Mouse move event
  */
 function OnMouseMove(event) {
-  // Update UI hover state
-  portfolioApp.isMouseOverUI = isMouseOverUI(event.clientX, event.clientY);
+  // Check if mouse is over UI element using event target
+  const targetElement = getEventTarget(event);
+  portfolioApp.isMouseOverUI = isUIElement(targetElement);
+  portfolioApp.currentUIElement = targetElement;
   
   // Check if we're navigating (mouse is down and moved beyond threshold)
   if (portfolioApp.isNavigating) {
@@ -983,7 +1014,7 @@ function OnMouseMove(event) {
   
   // Only update pointer if we're not over UI and not navigating
   if (!portfolioApp.isMouseOverUI && !portfolioApp.isNavigating) {
-    updatePointer(event);
+  updatePointer(event);
   }
 }
 
@@ -1024,18 +1055,21 @@ function OnMouseUp(event) {
 }
 
 /**
- * Handle click events on 3D objects with improved interaction rules
+ * Handle click events with simplified UI detection
  */
 function OnClick(event) {
+  // Get the actual clicked element
+  const clickedElement = getEventTarget(event);
+  
+  // If clicked on UI element, let it handle the click naturally
+  if (isUIElement(clickedElement)) {
+    console.log('🎯 UI element click - allowing normal UI interaction');
+    return; // Let UI handle the click
+  }
+  
   // Prevent scene interactions when modal is open
   if (isModalOpen()) {
     console.log('🚫 Click blocked - modal is open');
-    return;
-  }
-  
-  // Prevent interactions if mouse is over UI elements
-  if (portfolioApp.isMouseOverUI) {
-    console.log('🚫 Click blocked - mouse over UI element');
     return;
   }
   
@@ -1140,14 +1174,22 @@ window.addEventListener("click", (e) => { OnClick(e); });
 if (isMobile) {
   console.log('📱 Adding mobile touch event listeners');
   
-  // Touch events for mobile interaction
+  // Touch events for mobile interaction - simplified approach
   window.addEventListener("touchstart", (e) => {
-    // Prevent default to avoid double-tap zoom
     if (e.touches.length === 1) {
-      e.preventDefault();
       const touch = e.touches[0];
+      const touchedElement = document.elementFromPoint(touch.clientX, touch.clientY);
       
-      // Simulate mouse down
+      // If touching a UI element, let browser handle it naturally
+      if (isUIElement(touchedElement)) {
+        console.log('📱 Touch on UI element - allowing normal interaction');
+        return; // Don't prevent default, don't interfere
+      }
+      
+      // For 3D scene touches, prevent default and handle navigation
+      e.preventDefault();
+      
+      // Simulate mouse events for 3D interaction
       const mouseDownEvent = new MouseEvent('mousedown', {
         clientX: touch.clientX,
         clientY: touch.clientY,
@@ -1155,7 +1197,6 @@ if (isMobile) {
       });
       OnMouseDown(mouseDownEvent);
       
-      // Convert touch to mouse coordinates for raycasting
       const mouseMoveEvent = new MouseEvent('mousemove', {
         clientX: touch.clientX,
         clientY: touch.clientY
@@ -1166,10 +1207,16 @@ if (isMobile) {
   
   window.addEventListener("touchmove", (e) => {
     if (e.touches.length === 1) {
-      e.preventDefault();
       const touch = e.touches[0];
+      const touchedElement = document.elementFromPoint(touch.clientX, touch.clientY);
       
-      // Convert touch to mouse coordinates
+      // If moving over UI element, don't handle as 3D navigation
+      if (isUIElement(touchedElement)) {
+        return;
+      }
+      
+      e.preventDefault();
+      
       const mouseMoveEvent = new MouseEvent('mousemove', {
         clientX: touch.clientX,
         clientY: touch.clientY
@@ -1180,10 +1227,18 @@ if (isMobile) {
   
   window.addEventListener("touchend", (e) => {
     if (e.changedTouches.length === 1) {
-      e.preventDefault();
       const touch = e.changedTouches[0];
+      const touchedElement = document.elementFromPoint(touch.clientX, touch.clientY);
       
-      // Simulate mouse up
+      // If ending touch on UI element, let it handle naturally
+      if (isUIElement(touchedElement)) {
+        console.log('📱 Touch end on UI element - allowing normal interaction');
+        return;
+      }
+      
+      e.preventDefault();
+      
+      // Simulate mouse events for 3D interaction
       const mouseUpEvent = new MouseEvent('mouseup', {
         clientX: touch.clientX,
         clientY: touch.clientY,
@@ -1191,10 +1246,10 @@ if (isMobile) {
       });
       OnMouseUp(mouseUpEvent);
       
-      // Trigger click event with position
       const clickEvent = new MouseEvent('click', {
         clientX: touch.clientX,
-        clientY: touch.clientY
+        clientY: touch.clientY,
+        target: document.elementFromPoint(touch.clientX, touch.clientY)
       });
       OnClick(clickEvent);
     }
@@ -1471,7 +1526,7 @@ function OnHover(object, isHovering) {
       duration: HOVER_CONFIG.ANIMATION_DURATION,
       ease: HOVER_CONFIG.EASE_OUT,
     });
-    
+
     gsap.to(object.rotation, {
       x: object.userData.initialRotation.x,
       y: object.userData.initialRotation.y,
@@ -1479,7 +1534,7 @@ function OnHover(object, isHovering) {
       duration: HOVER_CONFIG.ANIMATION_DURATION,
       ease: HOVER_CONFIG.EASE_OUT,
     });
-    
+
     gsap.to(object.position, {
       x: object.userData.initialPosition.x,
       y: object.userData.initialPosition.y,
