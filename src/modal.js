@@ -302,8 +302,8 @@ export const openModal = (modalClass, isNavigating = false) => {
     // Clear any previous GSAP properties and reset modal state
     gsap.killTweensOf(modal);
     // Only clear specific properties instead of all to avoid global interference
-    gsap.set(modal, { clearProps: "scale,transform,transformOrigin,opacity" });
-    modal.style.opacity = '';
+    // gsap.set(modal, { clearProps: "scale,transform,transformOrigin,opacity" });
+    modal.style.opacity = '1';
     modal.style.display = 'block';
 
     ModalOpen = true;
@@ -336,13 +336,14 @@ export const openModal = (modalClass, isNavigating = false) => {
     // Choose animation based on whether another modal was open
     if (isAnotherModalOpen) {
       // Instant switch - no animation
-      gsap.set(modal, { 
-        opacity: 1,
-        scale: 1,
-        transformOrigin: "center center"
-      });
-      console.log(`Modal switched instantly: ${modalClass}`);
-    } else {
+      // gsap.set(modal, { 
+      //   opacity: 1,
+      //   scale: 1,
+      //   transformOrigin: "center center"
+      // });
+      // console.log(`Modal switched instantly: ${modalClass}`);
+    } 
+    else {
       // Scale up animation from 0 to fill screen
       gsap.set(modal, { 
         opacity: 1,
