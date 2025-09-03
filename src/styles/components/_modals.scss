@@ -17,6 +17,23 @@
   z-index: $z-modal;
   opacity: 0;
   transition: opacity $transition-normal;
+  
+  // Prevent zoom/scaling in modals
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  transform: scale(1);
+  transform-origin: center center;
+  
+  // Prevent pinch-to-zoom on touch devices
+  -ms-touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-scalable: no;
+  -moz-user-scalable: no;
+  -ms-user-scalable: no;
+  user-scalable: no;
 
   &.active {
     display: flex;
@@ -170,8 +187,8 @@
     bottom: 0%;
     left: 0%;
     height: 100%;
-    width: 45%;
-    min-width: 350px;
+    width: 27%;
+    min-width: 300px;
     max-width: 500px;
     padding: $spacing-xl $spacing-xl;
     display: block;
@@ -216,8 +233,8 @@
   bottom: 0%;
   right: 0%;
   height: 100%;
-  width: 45%;
-  min-width: 350px;
+  width: 25%;
+  min-width: 300px;
   max-width: 500px;
   padding: $spacing-xl $spacing-xl;
   display: block;

@@ -1168,6 +1168,64 @@ window.addEventListener("mouseup", (e) => { OnMouseUp(e); }, { passive: true });
 window.addEventListener("resize", OnResize);
 window.addEventListener("click", (e) => { OnClick(e); });
 
+// =============================================================================
+// ZOOM PREVENTION
+// =============================================================================
+
+// Prevent zoom with trackpad/mouse wheel + cmd/ctrl
+window.addEventListener("wheel", (e) => {
+  if (e.ctrlKey || e.metaKey) {
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+  }
+}, { passive: false });
+
+// Prevent zoom with keyboard shortcuts
+window.addEventListener("keydown", (e) => {
+  if ((e.ctrlKey || e.metaKey) && (e.key === '=' || e.key === '-' || e.key === '+' || e.key === '0')) {
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+  }
+}, { passive: false });
+
+// Prevent multi-touch zoom gestures globally
+document.addEventListener("touchstart", (e) => {
+  if (e.touches.length > 1) {
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+  }
+}, { passive: false });
+
+document.addEventListener("touchmove", (e) => {
+  if (e.touches.length > 1) {
+    e.preventDefault();
+    e.stopPropagation();
+    return false;
+  }
+}, { passive: false });
+
+// Prevent gesturestart, gesturechange, gestureend (Safari specific)
+window.addEventListener("gesturestart", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  return false;
+}, { passive: false });
+
+window.addEventListener("gesturechange", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  return false;
+}, { passive: false });
+
+window.addEventListener("gestureend", (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  return false;
+}, { passive: false });
+
 // Add mobile touch support
 if (isMobile) {
   console.log('📱 Adding mobile touch event listeners');

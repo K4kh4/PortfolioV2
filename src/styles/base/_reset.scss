@@ -24,6 +24,13 @@
 // Base HTML elements
 html {
   scroll-behavior: smooth;
+  // Prevent zoom/scaling
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+  -webkit-user-scalable: no;
+  -moz-user-scalable: no;
+  -ms-user-scalable: no;
+  user-scalable: no;
 }
 
 body {
@@ -34,6 +41,14 @@ body {
   color: $color-text;
   line-height: $line-height-normal;
   overflow-x: hidden;
+  // Prevent zoom/scaling
+  touch-action: manipulation;
+  -webkit-user-scalable: no;
+  -moz-user-scalable: no;
+  -ms-user-scalable: no;
+  user-scalable: no;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
 // Remove default button styles
