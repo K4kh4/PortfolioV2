@@ -259,7 +259,7 @@ const buttonObjects = [
   {
     name: "WorkButton_2",
     object: null,
-    modal: "work5",
+    modal: "work2",
     action: "showModal"
   },
   {
@@ -277,7 +277,7 @@ const buttonObjects = [
   {
     name: "WorkButton_5",
     object: null,
-    modal: "work2",
+    modal: "work5",
     action: "showModal"
   },
   {
@@ -378,7 +378,10 @@ const textureMap = {
     day: "/textures/Fifth_Texture_Set_Day_Denoised_Compressed.webp"
   },
   books:{
-    day: "/textures/Books.001.png"
+    day: "/textures/BooksBaked.webp"
+  },
+  macbook: {
+    day: "/textures/Mac.webp"
   }
 };
 
@@ -389,7 +392,8 @@ const loadedTexture = {
   Third: { day: {} },
   Fourth: { day: {} },
   Fifth: { day: {} },
-  books: { day: {} }
+  books: { day: {} },
+  macbook: { day: {} }
 };
 
 // =============================================================================
@@ -749,7 +753,7 @@ function loadModel() {
   console.log('🏠 Loading 3D model...');
   
   loader.load(
-    "/models/Room_V1-Compresed-v1.glb",
+    "/models/Room.glb",
     // onLoad - Success callback
     (gltf) => {
       console.log('✅ 3D Model loaded successfully!');
@@ -818,6 +822,13 @@ function setupScene(gltf) {
         material.map = loadedTexture.books.day;
         child.material = material;
       }
+      if (child.name.includes("Mac_")) {
+        const material = new THREE.MeshBasicMaterial();
+        material.map = loadedTexture.macbook.day;
+        material.transparent = true;
+        material.alphaTest = 0.5;
+        child.material = material;
+      }
 
       // Optimize texture filtering
       if (child.material.map) {
@@ -836,7 +847,7 @@ function setupScene(gltf) {
         child.userData.isAnimating = false;
       }
       
-      if (child.name.includes("Fourth_notebook_MyWork_Top_Raycaster_Pointer")) {
+      if (child.name.includes("Mac_Display")) {
         notebookObject = child;
         console.log("📔 Notebook object assigned:", notebookObject.name);
       }
@@ -941,8 +952,11 @@ function initializeControls() {
 // =============================================================================
 
 // Predefined camera positions for different views
-const cameraNotebookPosition = new THREE.Vector3(1.0116149200302174, 6.571313242426443, -0.8049478528131928);
-const targetNotebookPosition = new THREE.Vector3(-1.0674379059115109, 4.033968206624388, -0.790316383561921);
+//0.7866554556597812,3.55143487694999,-0.7752462564324646position
+//-0.9076926879177732,3.4230242980116303,-0.760892905769593target
+
+const cameraNotebookPosition = new THREE.Vector3(0.7866554556597812, 3.55143487694999, -0.7752462564324646);
+const targetNotebookPosition = new THREE.Vector3(-0.9076926879177732, 3.4230242980116303, -0.760892905769593);
 
 const cameraResumePosition = new THREE.Vector3(1.3, 4.8, -0.7);
 const targetResumePosition = new THREE.Vector3(1.2, 3.8, -2.1);
@@ -1279,7 +1293,7 @@ const Update = () => {
   if (portfolioApp.isDestroyed) {
     return;
   }
-
+ 
   // Continue the animation loop
   portfolioApp.animationId = requestAnimationFrame(Update);
 
@@ -1287,6 +1301,9 @@ const Update = () => {
   if (!renderer || !controls) {
     return;
   }
+  // // log camera position and target
+  // console.log(camera.position.clone().toArray() + "position");
+  // console.log(controls.target.clone().toArray() + "target");
 
   const now = performance.now();
 
@@ -1338,9 +1355,9 @@ const Update = () => {
  */
 function OpenNoteBook() {
   gsap.to(notebookObject.rotation, {
-    x: Math.PI,
+    x: -Math.PI/2,
     y: 0,
-    z: 0,
+    z: Math.PI/2,
     duration: 0.5,
     ease: 'power2.inOut',
     onComplete: function () {
@@ -1387,9 +1404,9 @@ function CloseNoteBook() {
 
   // Rotate notebook back
   gsap.to(notebookObject.rotation, {
-    x: 0,
-    y: 0,
-    z: 0,
+    x: -Math.PI/2,
+    y: Math.PI/2,
+    z: Math.PI/2,
     duration: 0.5,
     ease: 'power2.inOut'
   })

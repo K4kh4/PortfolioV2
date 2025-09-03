@@ -177,6 +177,21 @@ let aboutModal = null;
 let animationId = null;
 let startTime = Date.now();
 
+// Lerp tracking for smooth transitions
+let imagePositions = new Map(); // Store current positions for each image
+const lerpFactor = 0.08; // Smoothness factor (lower = smoother, higher = more responsive)
+
+/**
+ * Linear interpolation utility function
+ * @param {number} start - Starting value
+ * @param {number} end - Target value
+ * @param {number} factor - Interpolation factor (0-1)
+ * @returns {number} - Interpolated value
+ */
+function lerp(start, end, factor) {
+  return start + (end - start) * factor;
+}
+
 /**
  * Mouse movement handler for parallax effects
  * @param {MouseEvent} e - Mouse event
@@ -192,7 +207,7 @@ function handleMouseMove(e) {
 }
 
 /**
- * Update floating images with both mouse movement and floating animation
+ * Update floating images with both mouse movement and floating animation using smooth lerp transitions
  */
 function updateFloatingImages() {
   if (!aboutModal) return;
@@ -202,7 +217,15 @@ function updateFloatingImages() {
   const elapsed = (currentTime - startTime) / 1000; // Time in seconds
   
   floatingImages.forEach((image, index) => {
-    const speed = (parseFloat(image.dataset.speed) || 1) - 0.1;
+    const imageId = `image-${index}`;
+    
+    // Initialize position tracking for this image if not exists
+    if (!imagePositions.has(imageId)) {
+      imagePositions.set(imageId, { currentX: 0, currentY: 0 });
+    }
+    
+    const position = imagePositions.get(imageId);
+    const speed = (parseFloat(image.dataset.speed) || 1) * 0.5;
     
     // Mouse movement parallax
     const moveX = (mouseX - 0.5) * speed * 50; // Max 50px movement
@@ -210,21 +233,28 @@ function updateFloatingImages() {
     
     // Floating animation with different phases for each image
     const floatSpeed = 0.5 + index * 0.1; // Different speeds for variety
-    const floatAmplitude = 10 + index * 3; // Different amplitudes
+    const floatAmplitude = 0 + index * 3; // Different amplitudes
     const floatX = Math.sin(elapsed * floatSpeed + index) * (floatAmplitude * 0.5);
     const floatY = Math.cos(elapsed * floatSpeed * 0.7 + index) * floatAmplitude;
     
-    // Combine both movements
-    const totalX = moveX + floatX;
-    const totalY = moveY + floatY;
+    // Calculate target positions
+    const targetX = moveX + floatX;
+    const targetY = moveY + floatY;
     
-    // Apply transform
-    image.style.transform = `translate(${totalX}px, ${totalY}px)`;
+    // Smooth lerp transition to target positions
+    position.currentX = lerp(position.currentX, targetX, lerpFactor);
+    position.currentY = lerp(position.currentY, targetY, lerpFactor);
+    
+    // Apply the smoothed transform
+    gsap.set(image, {
+      x: position.currentX,
+      y: position.currentY
+    });
   });
 }
 
 /**
- * Start the floating animation loop
+ * Start the floating animation loop with initial fly-in animation
  */
 function startFloatingAnimation() {
   if (!aboutModal) return;
@@ -232,21 +262,98 @@ function startFloatingAnimation() {
   const floatingImages = aboutModal.querySelectorAll('.floating-image');
   console.log('Starting floating animation for', floatingImages.length, 'images');
   
-  // Reset start time
-  startTime = Date.now();
+  if (floatingImages.length === 0) return;
   
-  function animateFrame() {
-    if (!aboutModal || !aboutModal.classList.contains('active')) {
-      animationId = null;
-      return;
+  // Store original positions for each image
+  const originalPositions = [];
+  
+  floatingImages.forEach((image, index) => {
+    // Get the computed styles to find the original position
+    const computedStyle = window.getComputedStyle(image);
+    const originalBottom = computedStyle.bottom;
+    const originalRight = computedStyle.right;
+    
+    originalPositions.push({
+      bottom: originalBottom,
+      right: originalRight
+    });
+    
+    // Generate random starting position outside the screen
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+    
+    // Random positions outside screen boundaries
+    const side = Math.floor(Math.random() * 4); // 0: top, 1: right, 2: bottom, 3: left
+    let startX, startY;
+    
+    switch(side) {
+      case 0: // From top
+        startX = Math.random() * screenWidth;
+        startY = -200 - Math.random() * 300;
+        break;
+      case 1: // From right
+        startX = screenWidth + 200 + Math.random() * 300;
+        startY = Math.random() * screenHeight;
+        break;
+      case 2: // From bottom
+        startX = Math.random() * screenWidth;
+        startY = screenHeight + 200 + Math.random() * 300;
+        break;
+      case 3: // From left
+        startX = -200 - Math.random() * 300;
+        startY = Math.random() * screenHeight;
+        break;
     }
     
-    updateFloatingImages();
-    animationId = requestAnimationFrame(animateFrame);
-  }
+    // Set initial position and make invisible
+    gsap.set(image, {
+      x: startX,
+      y: startY,
+      opacity: 0
+    });
+  });
   
-  // Start the animation loop
-  animationId = requestAnimationFrame(animateFrame);
+  // Create fly-in animation timeline
+  const flyInTimeline = gsap.timeline({
+    onComplete: () => {
+      // Reset start time for floating animation
+      startTime = Date.now();
+      
+      // Initialize lerp positions to current positions (0,0 after fly-in)
+      floatingImages.forEach((image, index) => {
+        const imageId = `image-${index}`;
+        imagePositions.set(imageId, { currentX: 0, currentY: 0 });
+      });
+      
+      // Start the floating animation loop
+      function animateFrame() {
+        if (!aboutModal || !aboutModal.classList.contains('active')) {
+          animationId = null;
+          return;
+        }
+        
+        updateFloatingImages();
+        animationId = requestAnimationFrame(animateFrame);
+      }
+      
+      animationId = requestAnimationFrame(animateFrame);
+      console.log('Fly-in animation complete, floating animation started with lerp');
+    }
+  });
+  
+  // Animate each image flying in with staggered timing
+  floatingImages.forEach((image, index) => {
+    flyInTimeline.to(image, {
+      x: 0,
+      y: 0,
+      opacity: 1,
+      duration: 1 + Math.random() * 0.5, // Random duration between 1-1.5 seconds
+      ease: "back.out(1.1)",
+      delay: index * 0.1 // Stagger each image by 0.1 seconds
+    }, index * 0.1);
+  });
+  
+  console.log('Fly-in animation started for', floatingImages.length, 'images');
 }
 
 // =============================================================================
@@ -419,6 +526,8 @@ export const closeModal = (navigate = false, direction = 1, onComplete = null) =
             cancelAnimationFrame(animationId);
             animationId = null;
           }
+          // Clear position tracking for clean state next time
+          imagePositions.clear();
           aboutModal = null;
         }
         
