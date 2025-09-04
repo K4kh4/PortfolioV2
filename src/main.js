@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+import { OrbitControls } from './utils/OrbitControls.js'; //from src/utils/OrbitControls untill here
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import './style.scss'
@@ -937,6 +937,12 @@ function initializeControls() {
   }
 
   controls = new OrbitControls(camera, canvas);
+  controls.minDistance = 2;
+  controls.maxDistance = 25;
+  controls.minPolarAngle = 0;
+  controls.maxPolarAngle = Math.PI / 2;
+  controls.minAzimuthAngle = 0;
+  controls.maxAzimuthAngle = Math.PI / 2;
   controls.enableDamping = true;
   controls.enableZoom = true;
   controls.enablePan = true;

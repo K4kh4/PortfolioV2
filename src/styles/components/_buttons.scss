@@ -31,9 +31,9 @@
 // Home Button
 .home-button {
   @include pos-fixed(30px, auto, auto, 30px);
-  @include square(60px);
-  background: $color-btn-primary;
-  border: 2px solid $color-btn-primary-border;
+  // @include square(60px);
+  // background: $color-btn-primary;
+  border: 1px solid white;
   border-radius: $radius-xl;
   color: $color-text;
   font-size: 1.5rem;
@@ -49,23 +49,26 @@
   &.visible {
     opacity: 1;
     visibility: visible;
+    transition: transform $transition-normal;
     transform: scale(1);
   }
-
+ // hover needs animation for scale 
   &:hover {
-    background: $color-btn-primary;
-    border-color: $color-btn-primary-border;
+    // background: $color-btn-primary;
+    // border-color: $color-btn-primary-border;
+    transition: transform $transition-normal;
     transform: scale(1.1);
-    box-shadow: $shadow-glow;
+    // box-shadow: $shadow-glow;
   }
 
   &:active {
+    transition: transform $transition-normal;
     transform: scale(0.95);
   }
 
   img {
-    @include size(24px);
-    filter: invert(1);
+    @include size(54px);
+    // filter: invert(1);
   }
 }
 
