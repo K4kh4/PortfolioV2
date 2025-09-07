@@ -187,7 +187,7 @@
     bottom: 0%;
     left: 0%;
     height: 100%;
-    width: 27%;
+    width: 35%;
     min-width: 300px;
     max-width: 500px;
     padding: $spacing-xl $spacing-xl;
@@ -212,28 +212,38 @@
   h1 {
     font-size: $font-size-xxl;
     margin-bottom: $spacing-xs;
-    color: $color-text-dark;
+    color: $color_about_text;
   }
 
   h2 {
-    font-size: $font-size-lg;
+    font-size: $font-size-md;
     margin-bottom: $spacing-xs;
-    color: $color-text-dark;
+    color: $color_about_text;
   }
 
   p {
     font-size: $font-size-sm;
+    font-weight: $font-weight-bold;
     line-height: $line-height-loose;
-    color: $color-text-dark;
+    color: $color_about_text;
+    margin-bottom: $spacing-sm;
+  }
+  p1 {
+    font-size: $font-size-sm;
+    font-family: $font-primary;
+    
+    font-weight: $font-weight-bold;
+    line-height: $line-height-loose;
+    color: $color_about_text;
     margin-bottom: $spacing-sm;
   }
 }
 .about-content-right {
   position: absolute;
-  bottom: 0%;
+  bottom: -5%;
   right: 0%;
   height: 100%;
-  width: 25%;
+  width: 30%;
   min-width: 300px;
   max-width: 500px;
   padding: $spacing-xl $spacing-xl;
