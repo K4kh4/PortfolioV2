@@ -203,19 +203,19 @@ let notebookObject;
  */
 const buttonObjects = [
   {
-    name: "MyWork_Button",
+    name: "Third_MyWork_Button_Raycaster_Pointer_Hover",
     object: null, // Will be set when loading the model
     modal: "",
     action: "openNotebook" // Special action for this button
   },
   {
-    name: "Fourth_notebook_MyWork_Top_Raycaster_Pointer",
+    name: "Third_MyWork_Sign_Raycaster_Pointer_Hover",
     object: null, // Will be set when loading the model
     modal: "",
     action: "openNotebook" // Special action for this button
   },
   {
-    name: "MyWork_Sign",
+    name: "Mac_display",
     object: null, // Will be set when loading the model
     modal: "",
     action: "openNotebook" // Special action for this button
@@ -239,13 +239,19 @@ const buttonObjects = [
     action: "zoomToAboutMe"
   },
   {
-    name: "Other_Button",
+    name: "Third_Other_Button_Raycaster_Pointer_Hover",
     object: null,
     modal: "gallery",
     action: "showModal"
   },
   {
-    name: "Other_Sign",
+    name: "Third_Other_Sign_Raycaster_Pointer_Hover",
+    object: null,
+    modal: "gallery",
+    action: "showModal"
+  },
+  {
+    name: "Fourth__Board_ExtraButton_Raycaster_HoverV1_Pointer",
     object: null,
     modal: "gallery",
     action: "showModal"
@@ -278,6 +284,12 @@ const buttonObjects = [
     name: "WorkButton_5",
     object: null,
     modal: "work5",
+    action: "showModal"
+  },
+  {
+    name: "WorkButton_6",
+    object: null,
+    modal: "work6",
     action: "showModal"
   },
   {
@@ -753,7 +765,7 @@ function loadModel() {
   console.log('🏠 Loading 3D model...');
   
   loader.load(
-    "/models/Room.glb",
+    "/models/NatiasRoom_V2.glb",
     // onLoad - Success callback
     (gltf) => {
       console.log('✅ 3D Model loaded successfully!');
@@ -789,13 +801,13 @@ function setupScene(gltf) {
   gltf.scene.traverse((child) => {
     if (child.isMesh) {
       // Apply appropriate textures to different room sections
-      if (child.name.includes("First_")) {
+      if (child.name.includes("First")) {
         const material = new THREE.MeshBasicMaterial();
         material.map = loadedTexture.First.day;
         child.material = material;
       }
 
-      if (child.name.includes("Second_Room")) {
+      if (child.name.includes("Second")) {
         const material = new THREE.MeshBasicMaterial();
         material.map = loadedTexture.Second.day;
         child.material = material;
@@ -817,12 +829,7 @@ function setupScene(gltf) {
         material.map = loadedTexture.Fifth.day;
         child.material = material;
       }
-      if (child.name.includes("Book")) {
-        const material = new THREE.MeshBasicMaterial();
-        material.map = loadedTexture.books.day;
-        child.material = material;
-      }
-      if (child.name.includes("Mac_")) {
+      if (child.name.includes("Mac")) {
         const material = new THREE.MeshBasicMaterial();
         material.map = loadedTexture.macbook.day;
         material.transparent = true;
@@ -847,7 +854,7 @@ function setupScene(gltf) {
         child.userData.isAnimating = false;
       }
       
-      if (child.name.includes("Mac_Display")) {
+      if (child.name.includes("Mac_display")) {
         notebookObject = child;
         console.log("📔 Notebook object assigned:", notebookObject.name);
       }
