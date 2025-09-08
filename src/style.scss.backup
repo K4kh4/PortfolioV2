@@ -767,7 +767,7 @@ $bp-xs: 480px;
   }
   
   .media-item iframe {
-    height: 200px;
+    height: 500px;
   }
 }
 
