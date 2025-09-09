@@ -60,14 +60,23 @@
 
 .logo-column {
   flex: 0 0 450px;
-  padding: $spacing-xxl $spacing-xl;
+  padding: $spacing-lg $spacing-xl;
   background-color: $color-bg;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   gap: $spacing-xl;
 }
-
+.brand-name-logo {
+  width: 60%;
+  // height: 30%;
+  object-fit: contain;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  margin-bottom: $spacing-lg;
+}
 .brand-name {
   font-size: $font-size-xxl;
   font-weight: $font-weight-bold;
