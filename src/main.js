@@ -69,7 +69,7 @@ class PortfolioApp {
     this.isDestroyed = false;
     this.lastRaycastTime = 0;
     this.raycastInterval = isMobile ? PERFORMANCE_CONFIG.MOBILE_RAYCAST_INTERVAL : PERFORMANCE_CONFIG.RAYCAST_INTERVAL;
-    
+
     // Interaction state management
     this.isNavigating = false;
     this.isMouseOverUI = false;
@@ -80,19 +80,19 @@ class PortfolioApp {
 
   destroy() {
     this.isDestroyed = true;
-    
+
     // Stop animation loop
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
       this.animationId = null;
     }
-    
+
     // Cleanup Three.js resources
     if (renderer) {
       renderer.dispose();
       renderer.forceContextLoss();
     }
-    
+
     if (scene) {
       // Dispose of all geometries and materials
       scene.traverse((object) => {
@@ -109,7 +109,7 @@ class PortfolioApp {
       });
       scene.clear();
     }
-    
+
     // Remove event listeners
     window.removeEventListener("mousemove", OnMouseMove);
     window.removeEventListener("mousedown", OnMouseDown);
@@ -128,37 +128,38 @@ let portfolioApp = new PortfolioApp();
  * @returns {boolean} - True if element is UI
  */
 function isUIElement(element) {
-  if (!element) return false;
-  
+  if (!element) { console.log("No element found"); return false; }
+
   // Check if element itself or any parent has UI-related classes/IDs
   let currentElement = element;
   while (currentElement && currentElement !== document.body) {
     // Check for UI element classes and IDs
     if (currentElement.classList.contains('home-button') ||
-        currentElement.classList.contains('dark-mode-button') ||
-        currentElement.classList.contains('modal-exit-button') ||
-        currentElement.classList.contains('nav-arrow') ||
-        currentElement.classList.contains('enter-button') ||
-        currentElement.classList.contains('loading-modal') ||
-        currentElement.classList.contains('modal') ||
-        currentElement.id === 'home-button' ||
-        currentElement.id === 'dark-mode-button' ||
-        currentElement.id === 'enter-button' ||
-        currentElement.id === 'loading-modal') {
+      currentElement.classList.contains('dark-mode-button') ||
+      currentElement.classList.contains('modal-exit-button') ||
+      currentElement.classList.contains('nav-arrow') ||
+      currentElement.classList.contains('enter-button') ||
+      currentElement.classList.contains('loading-modal') ||
+      currentElement.classList.contains('modal') ||
+      currentElement.classList.contains('Dark') ||
+      currentElement.id === 'home-button' ||
+      currentElement.id === 'dark-mode-button' ||
+      currentElement.id === 'enter-button' ||
+      currentElement.id === 'loading-modal') {
       return true;
     }
-    
+
     // Check for any button or interactive element
-    if (currentElement.tagName === 'BUTTON' || 
-        currentElement.tagName === 'A' ||
-        currentElement.hasAttribute('onclick') ||
-        currentElement.style.cursor === 'pointer') {
+    if (currentElement.tagName === 'BUTTON' ||
+      currentElement.tagName === 'A' ||
+      currentElement.hasAttribute('onclick') ||
+      currentElement.style.cursor === 'pointer') {
       return true;
     }
-    
+
     currentElement = currentElement.parentElement;
   }
-  
+
   return false;
 }
 
@@ -192,6 +193,7 @@ function calculateDistance(point1, point2) {
 
 // Reference to the 3D notebook object that opens to show work buttons
 let notebookObject;
+let aboutMeObject;
 
 /**
  * Interactive objects configuration - maps 3D objects to their corresponding actions and modals
@@ -203,28 +205,22 @@ let notebookObject;
  */
 const buttonObjects = [
   {
-    name: "MyWork_Button",
+    name: "Third_MyWork_Button_Raycaster_Pointer_Hover",
     object: null, // Will be set when loading the model
     modal: "",
     action: "openNotebook" // Special action for this button
   },
   {
-    name: "Fourth_notebook_MyWork_Top_Raycaster_Pointer",
+    name: "Third_MyWork_Sign_Raycaster_Pointer_Hover",
     object: null, // Will be set when loading the model
     modal: "",
     action: "openNotebook" // Special action for this button
   },
   {
-    name: "MyWork_Sign",
+    name: "Mac_display",
     object: null, // Will be set when loading the model
     modal: "",
     action: "openNotebook" // Special action for this button
-  },
-  {
-    name: "Fifth_Seat_Top_Raycaster_Pointer",
-    object: null, // Will be set when loading the model
-    modal: "",
-    action: "rotateSeat" // Special action for this button
   },
   {
     name: "AboutMe_Button",
@@ -239,13 +235,19 @@ const buttonObjects = [
     action: "zoomToAboutMe"
   },
   {
-    name: "Other_Button",
+    name: "Third_Other_Button_Raycaster_Pointer_Hover",
     object: null,
     modal: "gallery",
     action: "showModal"
   },
   {
-    name: "Other_Sign",
+    name: "Third_Other_Sign_Raycaster_Pointer_Hover",
+    object: null,
+    modal: "gallery",
+    action: "showModal"
+  },
+  {
+    name: "Fourth__Board_ExtraButton_Raycaster_HoverV1_Pointer",
     object: null,
     modal: "gallery",
     action: "showModal"
@@ -278,6 +280,12 @@ const buttonObjects = [
     name: "WorkButton_5",
     object: null,
     modal: "work5",
+    action: "showModal"
+  },
+  {
+    name: "WorkButton_6",
+    object: null,
+    modal: "work6",
     action: "showModal"
   },
   {
@@ -338,7 +346,11 @@ window.resetNotebookView = () => {
   console.log('🏠 Resetting notebook and camera to original position');
   if (notebookObject) {
     CloseNoteBook();
+    HideAboutMe();
   }
+};
+window.onModeSwitch = (e) => {
+  switchMode(e);
 };
 
 // =============================================================================
@@ -363,37 +375,49 @@ const textureLoader = new THREE.TextureLoader();
 // Texture configuration - maps room sections to their texture files
 const textureMap = {
   First: {
-    day: "/textures/First_Texture_Set_Day_Denoised_Compressed.webp"
+    day: "/textures/Day/First_Texture_Set_Day_Denoised_Compressed.webp",
+    night: "/textures/Night/First_Texture_Set_Night_Denoised_Compressed.webp"
   },
   Second: {
-    day: "/textures/Second_Texture_Set_Day_Denoised_Compressed.webp"
+    day: "/textures/Day/Second_Texture_Set_Day_Denoised_Compressed.webp",
+    night: "/textures/Night/Second_Texture_Set_Night_Denoised_Compressed.webp"
   },
   Third: {
-    day: "/textures/Third_Texture_Set_Day_Denoised_Compressed.webp"
+    day: "/textures/Day/Third_Texture_Set_Day_Denoised_Compressed.webp",
+    night: "/textures/Night/Third_Texture_Set_Night_Denoised_Compressed.webp"
   },
   Fourth: {
-    day: "/textures/Forth_Texture_Set_Day_Denoised_Compressed.webp"
+    day: "/textures/Day/Forth_Texture_Set_Day_Denoised_Compressed.webp",
+    night: "/textures/Night/Forth_Texture_Set_Night_Denoised_Compressed.webp"
   },
   Fifth: {
-    day: "/textures/Fifth_Texture_Set_Day_Denoised_Compressed.webp"
+    day: "/textures/Day/Fifth_Texture_Set_Day_Denoised_Compressed.webp",
+    night: "/textures/Night/Fifth_Texture_Set_Night_Denoised_Compressed.webp"
   },
-  books:{
-    day: "/textures/BooksBaked.webp"
-  },
+
   macbook: {
-    day: "/textures/Mac.webp"
+    day: "/textures/Day/Mac.webp",
+    night: "/textures/Night/Mac_Night.webp"
   }
+};
+const materialMap = {
+  First: {},
+  Second: {},
+  Third: {},
+  Fourth: {},
+  Fifth: {},
+  macbook: {}
 };
 
 // Storage for loaded textures - populated during async loading
 const loadedTexture = {
-  First: { day: {} },
-  Second: { day: {} },
-  Third: { day: {} },
-  Fourth: { day: {} },
-  Fifth: { day: {} },
-  books: { day: {} },
-  macbook: { day: {} }
+  First: { day: {}, night: {} },
+  Second: { day: {}, night: {} },
+  Third: { day: {}, night: {} },
+  Fourth: { day: {}, night: {} },
+  Fifth: { day: {}, night: {} },
+  books: { day: {}, night: {} },
+  macbook: { day: {}, night: {} }
 };
 
 // =============================================================================
@@ -428,15 +452,15 @@ function updateProgress() {
   const progressPercentage = Math.round((loadedAssets / totalAssets) * 100);
   const progressFill = document.getElementById('progress-fill');
   const progressText = document.getElementById('progress-text');
-  
+
   if (progressFill) {
     progressFill.style.width = progressPercentage + '%';
   }
-  
+
   if (progressText) {
     progressText.textContent = progressPercentage + '%';
   }
-  
+
   console.log(`Loading progress: ${loadedAssets}/${totalAssets} (${progressPercentage}%)`);
 }
 
@@ -475,6 +499,9 @@ function onLoadComplete() {
   // Initialize notebook state
   if (notebookObject) {
     CloseNoteBook(notebookObject);
+  }
+  if (aboutMeObject) {
+    HideAboutMe();
   }
 
   // Clear the message interval
@@ -546,22 +573,22 @@ function checkIfComplete() {
  * Load textures with error handling and mobile optimization
  */
 function loadTextures() {
-Object.entries(textureMap).forEach(([key, value]) => {
-  const dayTexture = textureLoader.load(
-    value.day,
+  Object.entries(textureMap).forEach(([key, value]) => {
+    const dayTexture = textureLoader.load(
+      value.day,
       // onLoad
       (texture) => {
-      texturesLoaded++;
-      loadedAssets++;
+        texturesLoaded++;
+        loadedAssets++;
         console.log(`✅ Texture loaded: ${key} (${texturesLoaded}/${totalTextures})`);
-        
+
         // Optimize texture for mobile
         if (isMobile) {
           texture.minFilter = THREE.LinearFilter;
           texture.magFilter = THREE.LinearFilter;
           texture.generateMipmaps = false;
         }
-        
+
         updateProgress();
         checkIfComplete();
       },
@@ -574,29 +601,39 @@ Object.entries(textureMap).forEach(([key, value]) => {
         console.error(`❌ Failed to load texture ${key}:`, error);
         texturesLoaded++; // Still count as "loaded" to prevent hanging
         loadedAssets++;
-        
+
         // Create fallback colored texture
         const canvas = document.createElement('canvas');
         canvas.width = canvas.height = 1;
         const ctx = canvas.getContext('2d');
         ctx.fillStyle = '#333333'; // Dark gray fallback
         ctx.fillRect(0, 0, 1, 1);
-        
+
         const fallbackTexture = new THREE.CanvasTexture(canvas);
         fallbackTexture.flipY = false;
         fallbackTexture.colorSpace = THREE.SRGBColorSpace;
         loadedTexture[key].day = fallbackTexture;
-        
+
         console.log(`🔄 Created fallback texture for ${key}`);
-      updateProgress();
-      checkIfComplete();
-    }
-  );
-    
-  dayTexture.flipY = false;
-  dayTexture.colorSpace = THREE.SRGBColorSpace;
-  loadedTexture[key].day = dayTexture;
-});
+        updateProgress();
+        checkIfComplete();
+      }
+    );
+    const nightTexture = textureLoader.load(
+      value.night,
+      (texture) => {
+
+        console.log(`✅ Texture loaded: ${key} (${texturesLoaded}/${totalTextures})`);
+      }
+    );
+    nightTexture.flipY = false;
+    nightTexture.colorSpace = THREE.SRGBColorSpace;
+    loadedTexture[key].night = nightTexture;
+
+    dayTexture.flipY = false;
+    dayTexture.colorSpace = THREE.SRGBColorSpace;
+    loadedTexture[key].day = dayTexture;
+  });
 }
 
 // Start texture loading
@@ -619,7 +656,7 @@ loader.setDRACOLoader(dracoLoader);
  */
 function createFallbackInterface() {
   console.log('🔄 Creating fallback 2D interface...');
-  
+
   const fallbackHTML = `
     <div class="fallback-portfolio" style="
       position: fixed;
@@ -730,19 +767,19 @@ function createFallbackInterface() {
       </div>
     </div>
   `;
-  
+
   // Hide the 3D canvas and loading modal
   const canvas = document.getElementById('experience-canvas');
   const loadingModal = document.getElementById('loading-modal');
   if (canvas) canvas.style.display = 'none';
   if (loadingModal) loadingModal.style.display = 'none';
-  
+
   // Add fallback interface
   document.body.insertAdjacentHTML('beforeend', fallbackHTML);
-  
+
   // Initialize modals for fallback interface
   initializeModals();
-  
+
   console.log('✅ Fallback interface created successfully');
 }
 
@@ -751,9 +788,9 @@ function createFallbackInterface() {
  */
 function loadModel() {
   console.log('🏠 Loading 3D model...');
-  
+
   loader.load(
-    "/models/Room.glb",
+    "/models/NatiasRoom_V2.glb",
     // onLoad - Success callback
     (gltf) => {
       console.log('✅ 3D Model loaded successfully!');
@@ -770,10 +807,10 @@ function loadModel() {
     (error) => {
       console.error('❌ Failed to load 3D model:', error);
       console.log('🔄 Switching to fallback 2D interface...');
-      
+
       // Create fallback interface
       createFallbackInterface();
-      
+
       // Still mark as "loaded" to prevent infinite loading
       modelLoaded = true;
       loadedAssets++;
@@ -789,21 +826,24 @@ function setupScene(gltf) {
   gltf.scene.traverse((child) => {
     if (child.isMesh) {
       // Apply appropriate textures to different room sections
-      if (child.name.includes("First_")) {
+      if (child.name.includes("First")) {
         const material = new THREE.MeshBasicMaterial();
         material.map = loadedTexture.First.day;
         child.material = material;
+        materialMap.First = child.material;
       }
 
-      if (child.name.includes("Second_Room")) {
+      if (child.name.includes("Second")) {
         const material = new THREE.MeshBasicMaterial();
         material.map = loadedTexture.Second.day;
         child.material = material;
+        materialMap.Second = child.material;
       }
       if (child.name.includes("Third")) {
         const material = new THREE.MeshBasicMaterial();
         material.map = loadedTexture.Third.day;
         child.material = material;
+        materialMap.Third = child.material;
       }
       if (child.name.includes("Fourth")) {
         const material = new THREE.MeshBasicMaterial();
@@ -811,45 +851,48 @@ function setupScene(gltf) {
         material.transparent = true;
         material.alphaTest = 0.5;
         child.material = material;
+        materialMap.Fourth = child.material;
       }
       if (child.name.includes("Fifth")) {
         const material = new THREE.MeshBasicMaterial();
         material.map = loadedTexture.Fifth.day;
         child.material = material;
+        materialMap.Fifth = child.material;
       }
-      if (child.name.includes("Book")) {
-        const material = new THREE.MeshBasicMaterial();
-        material.map = loadedTexture.books.day;
-        child.material = material;
-      }
-      if (child.name.includes("Mac_")) {
+      if (child.name.includes("Mac")) {
         const material = new THREE.MeshBasicMaterial();
         material.map = loadedTexture.macbook.day;
         material.transparent = true;
         material.alphaTest = 0.5;
         child.material = material;
+        materialMap.macbook = child.material;
       }
 
       // Optimize texture filtering
       if (child.material.map) {
         child.material.map.minFilter = THREE.LinearFilter;
+
       }
 
       // Setup interactive objects
       if (child.name.includes("Raycaster")) {
         raycastObjects.push(child);
       }
-      
+
       if (child.name.includes("Hover")) {
         child.userData.initialPosition = new THREE.Vector3().copy(child.position);
         child.userData.initialRotation = new THREE.Euler().copy(child.rotation);
         child.userData.initialScale = new THREE.Vector3().copy(child.scale);
         child.userData.isAnimating = false;
       }
-      
-      if (child.name.includes("Mac_Display")) {
+
+      if (child.name.includes("Mac_display")) {
         notebookObject = child;
         console.log("📔 Notebook object assigned:", notebookObject.name);
+      }
+      if (child.name.includes("AbouButton")) {
+        aboutMeObject = child;
+        console.log("📔 About Me object assigned:", aboutMeObject.name);
       }
 
       // Check if this object matches any interactive object
@@ -882,11 +925,11 @@ function setupScene(gltf) {
   // Check completion with timeout to prevent infinite loops
   let checkAttempts = 0;
   const maxCheckAttempts = 50; // 5 seconds max
-  
+
   const checkInterval = setInterval(() => {
     checkAttempts++;
     checkIfComplete();
-    
+
     if (objectsAssigned || checkAttempts >= maxCheckAttempts) {
       clearInterval(checkInterval);
       if (checkAttempts >= maxCheckAttempts) {
@@ -917,13 +960,13 @@ function initializeRenderer() {
     antialias: !isMobile, // Disable antialiasing on mobile for performance
     powerPreference: isMobile ? "low-power" : "high-performance"
   });
-  
+
   renderer.setSize(sizes.width, sizes.height);
-  
+
   // Optimize pixel ratio for mobile devices
   const maxPixelRatio = isMobile ? PERFORMANCE_CONFIG.MOBILE_PIXEL_RATIO_MAX : 2;
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio));
-  
+
   console.log(`🎮 Renderer initialized - Mobile: ${isMobile}, PixelRatio: ${renderer.getPixelRatio()}`);
 }
 
@@ -1004,21 +1047,21 @@ function OnMouseMove(event) {
   const targetElement = getEventTarget(event);
   portfolioApp.isMouseOverUI = isUIElement(targetElement);
   portfolioApp.currentUIElement = targetElement;
-  
+
   // Check if we're navigating (mouse is down and moved beyond threshold)
   if (portfolioApp.isNavigating) {
     const currentPos = { x: event.clientX, y: event.clientY };
     const distance = calculateDistance(portfolioApp.mouseDownPosition, currentPos);
-    
+
     if (distance > portfolioApp.navigationThreshold) {
       // We're definitely navigating - don't update pointer for raycasting
       return;
     }
   }
-  
+
   // Only update pointer if we're not over UI and not navigating
   if (!portfolioApp.isMouseOverUI && !portfolioApp.isNavigating) {
-  updatePointer(event);
+    updatePointer(event);
   }
 }
 
@@ -1043,10 +1086,10 @@ function OnMouseUp(event) {
   if (event.button === 0) {
     const wasNavigating = portfolioApp.isNavigating;
     portfolioApp.isNavigating = false;
-    
+
     if (wasNavigating) {
       console.log('🖱️ Mouse up - navigation mode disabled');
-      
+
       // Small delay to prevent immediate interaction after navigation
       setTimeout(() => {
         // Update pointer position for next interaction
@@ -1064,30 +1107,30 @@ function OnMouseUp(event) {
 function OnClick(event) {
   // Get the actual clicked element
   const clickedElement = getEventTarget(event);
-  
+
   // If clicked on UI element, let it handle the click naturally
   if (isUIElement(clickedElement)) {
     console.log('🎯 UI element click - allowing normal UI interaction');
     return; // Let UI handle the click
   }
-  
+
   // Prevent scene interactions when modal is open
   if (isModalOpen()) {
     console.log('🚫 Click blocked - modal is open');
     return;
   }
-  
+
   // Prevent interactions if we just finished navigating
   if (portfolioApp.isNavigating) {
     console.log('🚫 Click blocked - navigation in progress');
     return;
   }
-  
+
   // Check if this was a navigation click (mouse moved significantly during click)
   if (event && portfolioApp.mouseDownPosition) {
     const currentPos = { x: event.clientX, y: event.clientY };
     const distance = calculateDistance(portfolioApp.mouseDownPosition, currentPos);
-    
+
     if (distance > portfolioApp.navigationThreshold) {
       console.log('🚫 Click blocked - was navigation gesture');
       return;
@@ -1173,6 +1216,7 @@ window.addEventListener("mousedown", (e) => { OnMouseDown(e); }, { passive: true
 window.addEventListener("mouseup", (e) => { OnMouseUp(e); }, { passive: true });
 window.addEventListener("resize", OnResize);
 window.addEventListener("click", (e) => { OnClick(e); });
+// window.addEventListener("onModeSwitch", (e) => { OnModeSwitch(e); });
 
 // =============================================================================
 // ZOOM PREVENTION
@@ -1235,22 +1279,22 @@ window.addEventListener("gestureend", (e) => {
 // Add mobile touch support
 if (isMobile) {
   console.log('📱 Adding mobile touch event listeners');
-  
+
   // Touch events for mobile interaction - simplified approach
   window.addEventListener("touchstart", (e) => {
     if (e.touches.length === 1) {
       const touch = e.touches[0];
       const touchedElement = document.elementFromPoint(touch.clientX, touch.clientY);
-      
+
       // If touching a UI element, let browser handle it naturally
       if (isUIElement(touchedElement)) {
         console.log('📱 Touch on UI element - allowing normal interaction');
         return; // Don't prevent default, don't interfere
       }
-      
+
       // For 3D scene touches, prevent default and handle navigation
       e.preventDefault();
-      
+
       // Simulate mouse events for 3D interaction
       const mouseDownEvent = new MouseEvent('mousedown', {
         clientX: touch.clientX,
@@ -1258,7 +1302,7 @@ if (isMobile) {
         button: 0
       });
       OnMouseDown(mouseDownEvent);
-      
+
       const mouseMoveEvent = new MouseEvent('mousemove', {
         clientX: touch.clientX,
         clientY: touch.clientY
@@ -1266,19 +1310,19 @@ if (isMobile) {
       OnMouseMove(mouseMoveEvent);
     }
   }, { passive: false });
-  
+
   window.addEventListener("touchmove", (e) => {
     if (e.touches.length === 1) {
       const touch = e.touches[0];
       const touchedElement = document.elementFromPoint(touch.clientX, touch.clientY);
-      
+
       // If moving over UI element, don't handle as 3D navigation
       if (isUIElement(touchedElement)) {
         return;
       }
-      
+
       e.preventDefault();
-      
+
       const mouseMoveEvent = new MouseEvent('mousemove', {
         clientX: touch.clientX,
         clientY: touch.clientY
@@ -1286,20 +1330,20 @@ if (isMobile) {
       OnMouseMove(mouseMoveEvent);
     }
   }, { passive: false });
-  
+
   window.addEventListener("touchend", (e) => {
     if (e.changedTouches.length === 1) {
       const touch = e.changedTouches[0];
       const touchedElement = document.elementFromPoint(touch.clientX, touch.clientY);
-      
+
       // If ending touch on UI element, let it handle naturally
       if (isUIElement(touchedElement)) {
         console.log('📱 Touch end on UI element - allowing normal interaction');
         return;
       }
-      
+
       e.preventDefault();
-      
+
       // Simulate mouse events for 3D interaction
       const mouseUpEvent = new MouseEvent('mouseup', {
         clientX: touch.clientX,
@@ -1307,7 +1351,7 @@ if (isMobile) {
         button: 0
       });
       OnMouseUp(mouseUpEvent);
-      
+
       const clickEvent = new MouseEvent('click', {
         clientX: touch.clientX,
         clientY: touch.clientY,
@@ -1316,7 +1360,7 @@ if (isMobile) {
       OnClick(clickEvent);
     }
   }, { passive: false });
-  
+
   // Prevent context menu on long press
   window.addEventListener("contextmenu", (e) => {
     e.preventDefault();
@@ -1348,6 +1392,8 @@ document.addEventListener('visibilitychange', () => {
  * Main animation loop - handles rendering and interactions with performance optimization
  */
 let isNotebookOpen = false;
+let isCameraMoving = false;
+let isAboutMeOpen = false;
 
 /**
  * Optimized update function with throttled raycasting
@@ -1357,7 +1403,7 @@ const Update = () => {
   if (portfolioApp.isDestroyed) {
     return;
   }
- 
+
   // Continue the animation loop
   portfolioApp.animationId = requestAnimationFrame(Update);
 
@@ -1372,16 +1418,32 @@ const Update = () => {
   const now = performance.now();
 
   // Check distance between camera and notebook - use constants instead of magic numbers
-  const distance = controls.target.distanceTo(targetNotebookPosition);
-  const distance2 = camera.position.distanceTo(cameraNotebookPosition);
-  
-  if (distance > CAMERA_THRESHOLDS.NOTEBOOK_DISTANCE && isNotebookOpen) {
-    console.log("📔 Closing notebook - camera moved away");
-    CloseNoteBook();
+  if (isNotebookOpen) {
+    const distance = controls.target.distanceTo(targetNotebookPosition);
+    const distance2 = camera.position.distanceTo(cameraNotebookPosition);
+
+    if (distance > CAMERA_THRESHOLDS.NOTEBOOK_DISTANCE ) {
+      console.log("📔 Closing notebook - camera moved away");
+      CloseNoteBook();
+    }
+    if (distance2 > CAMERA_THRESHOLDS.POSITION_DISTANCE ) {
+      CloseNoteBook();
+    }
   }
-  if (distance2 > CAMERA_THRESHOLDS.POSITION_DISTANCE && isNotebookOpen) {
-    CloseNoteBook();
+  if (isAboutMeOpen) 
+    {
+    const distanceToAboutMe = controls.target.distanceTo(targetResumePosition);
+    const distanceToAboutMe2 = camera.position.distanceTo(cameraResumePosition);
+    if (distanceToAboutMe > CAMERA_THRESHOLDS.POSITION_DISTANCE ) {
+      HideAboutMe();
+    }
+    if (distanceToAboutMe2 > CAMERA_THRESHOLDS.POSITION_DISTANCE ) {
+      HideAboutMe();
+    }
   }
+ 
+
+
 
   // Always update camera controls and render - this should be 60fps
   if (controls && controls.enabled) {
@@ -1393,11 +1455,11 @@ const Update = () => {
 
   // Only perform raycasting and interactions when conditions are met
   // Throttle raycasting to improve performance (30fps on desktop, 20fps on mobile)
-  const shouldPerformRaycast = !isModalOpen() && 
-                               !portfolioApp.isMouseOverUI && 
-                               !portfolioApp.isNavigating &&
-                               (now - portfolioApp.lastRaycastTime > portfolioApp.raycastInterval);
-  
+  const shouldPerformRaycast = !isModalOpen() &&
+    !portfolioApp.isMouseOverUI &&
+    !portfolioApp.isNavigating &&
+    (now - portfolioApp.lastRaycastTime > portfolioApp.raycastInterval);
+
   if (shouldPerformRaycast) {
     // Perform raycasting and handle interactions
     const intersections = performRaycast(camera);
@@ -1418,10 +1480,14 @@ const Update = () => {
  * Opens the notebook with animation and shows work buttons
  */
 function OpenNoteBook() {
+  if (isNotebookOpen) {
+    return;
+  }
+  isCameraMoving = true;
   gsap.to(notebookObject.rotation, {
-    x: -Math.PI/2,
+    x: -Math.PI / 2,
     y: 0,
-    z: Math.PI/2,
+    z: Math.PI / 2,
     duration: 0.5,
     ease: 'power2.inOut',
     onComplete: function () {
@@ -1466,14 +1532,55 @@ function CloseNoteBook() {
     }
   });
 
+
   // Rotate notebook back
   gsap.to(notebookObject.rotation, {
-    x: -Math.PI/2,
-    y: Math.PI/2,
-    z: Math.PI/2,
+    x: -Math.PI / 2,
+    y: Math.PI / 2,
+    z: Math.PI / 2,
     duration: 0.5,
     ease: 'power2.inOut'
   })
+  notebookObject.userData.initialRotation = new THREE.Euler(-Math.PI / 2, Math.PI / 2, Math.PI / 2);
+
+  // Reset camera to original position
+
+}
+function HideAboutMe() {
+
+
+isAboutMeOpen = false;
+
+  // Rotate notebook back
+  gsap.to(aboutMeObject.scale, {
+    x: 1,
+    y: 0,
+    z: 1,
+    duration: 0.5,
+    ease: 'power2.inOut'
+  })
+  notebookObject.userData.initialRotation = new THREE.Euler(-Math.PI / 2, Math.PI / 2, Math.PI / 2);
+
+  // Reset camera to original position
+
+}
+function ShowAboutMe() {
+
+
+
+
+  // Rotate notebook back
+  gsap.to(aboutMeObject.scale, {
+    x: 1,
+    y: 1,
+    z: 1,
+    duration: 0.5,
+    ease: 'power2.inOut',
+    onComplete: function () {
+      isAboutMeOpen = true;
+    }
+  })
+  notebookObject.userData.initialRotation = new THREE.Euler(-Math.PI / 2, Math.PI / 2, Math.PI / 2);
 
   // Reset camera to original position
 
@@ -1498,6 +1605,7 @@ function resetCameraPosition() {
     ease: 'power2.inOut'
   });
   CloseNoteBook();
+  HideAboutMe();
 }
 /**
  * Animates camera to focus on the notebook
@@ -1508,7 +1616,10 @@ function zoomCameraToNoteBook() {
     y: cameraNotebookPosition.y,
     z: cameraNotebookPosition.z,
     duration: 0.5,
-    ease: 'power2.out'
+    ease: 'power2.out',
+    onComplete: function () {
+      isCameraMoving = false;
+    }
   })
   gsap.to(controls.target, {
     x: targetNotebookPosition.x,
@@ -1524,7 +1635,11 @@ function zoomCameraToResume() {
     y: cameraResumePosition.y,
     z: cameraResumePosition.z,
     duration: 0.5,
-    ease: 'power2.inOut'
+    ease: 'power2.inOut',
+    onComplete: function () {
+      isCameraMoving = false;
+      ShowAboutMe();
+    }
   })
   gsap.to(controls.target, {
     x: targetResumePosition.x,
@@ -1556,23 +1671,28 @@ function zoomCameraToBoard() {
  * @param {boolean} isHovering - Whether the object is being hovered
  */
 function OnHover(object, isHovering) {
+  if (object.name.includes("Mac_display")) {
+    macHover(object, isHovering);
+    return;
+  }
   // Kill any existing animations to prevent conflicts
   gsap.killTweensOf(object.scale);
   gsap.killTweensOf(object.rotation);
   gsap.killTweensOf(object.position);
-  
+
+
   // Don't animate objects that are scaled down (hidden)
   if (object.scale.x < CAMERA_THRESHOLDS.CLOSE_DISTANCE) {
     return;
   }
-  
+
   const HOVER_CONFIG = {
     SCALE_MULTIPLIER: 1.15,
     ANIMATION_DURATION: 0.2,
     EASE_IN: 'back.out(3)',
     EASE_OUT: 'back.out(3)'
   };
-  
+
   if (isHovering) {
     // Scale up on hover
     gsap.to(object.scale, {
@@ -1582,7 +1702,9 @@ function OnHover(object, isHovering) {
       duration: HOVER_CONFIG.ANIMATION_DURATION,
       ease: HOVER_CONFIG.EASE_IN,
     });
-  } else {
+  }
+  else {
+
     // Return to original state
     gsap.to(object.scale, {
       x: object.userData.initialScale.x,
@@ -1609,23 +1731,79 @@ function OnHover(object, isHovering) {
     });
   }
 }
+function macHover(object, isHovering) {
+  if (isNotebookOpen || isCameraMoving) {
+
+    return;
+  }
+  const HOVER_CONFIG = {
+    SCALE_MULTIPLIER: 1.15,
+    ANIMATION_DURATION: 0.2,
+    EASE_IN: 'back.out(3)',
+    EASE_OUT: 'back.out(1)'
+  };
+  if (isHovering) {
+    gsap.to(object.rotation, {
+      x: object.userData.initialRotation.x,
+      y: object.userData.initialRotation.y - .5,
+      z: object.userData.initialRotation.z,
+      duration: HOVER_CONFIG.ANIMATION_DURATION,
+      ease: HOVER_CONFIG.EASE_IN,
+    });
+  }
+  else {
+    gsap.to(object.rotation, {
+      x: object.userData.initialRotation.x,
+      y: object.userData.initialRotation.y,
+      z: object.userData.initialRotation.z,
+      duration: HOVER_CONFIG.ANIMATION_DURATION,
+      ease: HOVER_CONFIG.EASE_OUT,
+    });
+  }
+}
+function switchMode(e) {
+  //is dark mode frrrom modal.js 
+  scene.traverse(child => {
+    if (child.isMesh && !child.name.includes("Hitbox")) {
+      if (child.name.includes("First")) {
+        child.material.map = e === 'dark' ? loadedTexture.First.night : loadedTexture.First.day;
+      }
+      if (child.name.includes("Second")) {
+        child.material.map = e === 'dark' ? loadedTexture.Second.night : loadedTexture.Second.day;
+      }
+      if (child.name.includes("Third")) {
+        child.material.map = e === 'dark' ? loadedTexture.Third.night : loadedTexture.Third.day;
+      }
+      if (child.name.includes("Fourth")) {
+        child.material.map = e === 'dark' ? loadedTexture.Fourth.night : loadedTexture.Fourth.day;
+      }
+      if (child.name.includes("Fifth")) {
+        child.material.map = e === 'dark' ? loadedTexture.Fifth.night : loadedTexture.Fifth.day;
+      }
+      if (child.name.includes("Mac")) {
+        child.material.map = e === 'dark' ? loadedTexture.macbook.night : loadedTexture.macbook.day;
+      }
+
+    }
+  });
+}
 /**
  * Rotate the seat object with smooth animation
  */
 function rotateSeat() {
   const seatObject = buttonObjects.find(obj => obj.name === "Fifth_Seat_Top_Raycaster_Pointer")?.object;
-  
+
   if (!seatObject) {
     console.warn('⚠️ Seat object not found for rotation');
     return;
   }
-  
+
   const ROTATION_CONFIG = {
     DURATION: 1,
     EASE: 'back.inOut(3)',
     FULL_ROTATION: Math.PI * 2
   };
-  
+
   gsap.to(seatObject.rotation, {
     x: 0,
     y: seatObject.rotation.y - ROTATION_CONFIG.FULL_ROTATION,
