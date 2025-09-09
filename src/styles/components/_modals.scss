@@ -211,7 +211,7 @@
 
     // Semi-transparent overlay behind text for readability
     background: rgba(255, 255, 255, 0);
-    backdrop-filter: blur(15px);
+    // backdrop-filter: blur(15px);
     border-radius: 0px;
     // box-shadow: 
     //   0 25px 50px rgba(0, 0, 0, 0.15),
@@ -298,7 +298,7 @@ p {
 .floating-images {
   position: absolute;
   bottom: 25%;
-  right: 33%;
+  right: 31%;
   width: 50%;
   height: 100%;
   pointer-events: none;
@@ -571,8 +571,9 @@ p {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
-  color: #ffffff;
+  color: $color_about_text;
   text-decoration: none;
+  
   font-weight: 500;
   font-size: 0.9rem;
   transition: all 0.3s ease;

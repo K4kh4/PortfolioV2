@@ -1004,8 +1004,8 @@ function initializeControls() {
 //0.7866554556597812,3.55143487694999,-0.7752462564324646position
 //-0.9076926879177732,3.4230242980116303,-0.760892905769593target
 
-const cameraNotebookPosition = new THREE.Vector3(0.7866554556597812, 3.55143487694999, -0.7752462564324646);
-const targetNotebookPosition = new THREE.Vector3(-0.9076926879177732, 3.4230242980116303, -0.760892905769593);
+const cameraNotebookPosition = new THREE.Vector3(-0.7866554556597812, 3.55143487694999, -0.7752462564324646);
+const targetNotebookPosition = new THREE.Vector3(-1.9076926879177732, 3.4230242980116303, -0.760892905769593);
 
 const cameraResumePosition = new THREE.Vector3(1.3, 4.8, -0.7);
 const targetResumePosition = new THREE.Vector3(1.2, 3.8, -2.1);
