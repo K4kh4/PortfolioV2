@@ -1480,10 +1480,11 @@ const Update = () => {
  * Opens the notebook with animation and shows work buttons
  */
 function OpenNoteBook() {
+  isCameraMoving = true;
   if (isNotebookOpen) {
     return;
   }
-  isCameraMoving = true;
+  
   gsap.to(notebookObject.rotation, {
     x: -Math.PI / 2,
     y: 0,
@@ -1504,6 +1505,7 @@ function OpenNoteBook() {
             ease: 'power2.inOut',
             onComplete: function () {
               isNotebookOpen = true;
+              isCameraMoving = false;
             }
           })
         }
@@ -1617,8 +1619,9 @@ function zoomCameraToNoteBook() {
     z: cameraNotebookPosition.z,
     duration: 0.5,
     ease: 'power2.out',
+    //add delay to on complete: 0.5,
     onComplete: function () {
-      isCameraMoving = false;
+    
     }
   })
   gsap.to(controls.target, {
