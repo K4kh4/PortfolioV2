@@ -128,7 +128,7 @@ let portfolioApp = new PortfolioApp();
  * @returns {boolean} - True if element is UI
  */
 function isUIElement(element) {
-  if (!element){console.log("No element found"); return false;} 
+  if (!element) { console.log("No element found"); return false; }
 
   // Check if element itself or any parent has UI-related classes/IDs
   let currentElement = element;
@@ -193,6 +193,7 @@ function calculateDistance(point1, point2) {
 
 // Reference to the 3D notebook object that opens to show work buttons
 let notebookObject;
+let aboutMeObject;
 
 /**
  * Interactive objects configuration - maps 3D objects to their corresponding actions and modals
@@ -220,12 +221,6 @@ const buttonObjects = [
     object: null, // Will be set when loading the model
     modal: "",
     action: "openNotebook" // Special action for this button
-  },
-  {
-    name: "Fifth_Seat_Top_Raycaster_Pointer",
-    object: null, // Will be set when loading the model
-    modal: "",
-    action: "rotateSeat" // Special action for this button
   },
   {
     name: "AboutMe_Button",
@@ -351,6 +346,7 @@ window.resetNotebookView = () => {
   console.log('🏠 Resetting notebook and camera to original position');
   if (notebookObject) {
     CloseNoteBook();
+    HideAboutMe();
   }
 };
 window.onModeSwitch = (e) => {
@@ -405,12 +401,12 @@ const textureMap = {
   }
 };
 const materialMap = {
-  First: { },
-  Second: { },
-  Third: { },
-  Fourth: { },
-  Fifth: { },
-  macbook: { }
+  First: {},
+  Second: {},
+  Third: {},
+  Fourth: {},
+  Fifth: {},
+  macbook: {}
 };
 
 // Storage for loaded textures - populated during async loading
@@ -503,6 +499,9 @@ function onLoadComplete() {
   // Initialize notebook state
   if (notebookObject) {
     CloseNoteBook(notebookObject);
+  }
+  if (aboutMeObject) {
+    HideAboutMe();
   }
 
   // Clear the message interval
@@ -623,7 +622,7 @@ function loadTextures() {
     const nightTexture = textureLoader.load(
       value.night,
       (texture) => {
-       
+
         console.log(`✅ Texture loaded: ${key} (${texturesLoaded}/${totalTextures})`);
       }
     );
@@ -890,6 +889,10 @@ function setupScene(gltf) {
       if (child.name.includes("Mac_display")) {
         notebookObject = child;
         console.log("📔 Notebook object assigned:", notebookObject.name);
+      }
+      if (child.name.includes("AbouButton")) {
+        aboutMeObject = child;
+        console.log("📔 About Me object assigned:", aboutMeObject.name);
       }
 
       // Check if this object matches any interactive object
@@ -1390,6 +1393,7 @@ document.addEventListener('visibilitychange', () => {
  */
 let isNotebookOpen = false;
 let isCameraMoving = false;
+let isAboutMeOpen = false;
 
 /**
  * Optimized update function with throttled raycasting
@@ -1414,16 +1418,32 @@ const Update = () => {
   const now = performance.now();
 
   // Check distance between camera and notebook - use constants instead of magic numbers
-  const distance = controls.target.distanceTo(targetNotebookPosition);
-  const distance2 = camera.position.distanceTo(cameraNotebookPosition);
+  if (isNotebookOpen) {
+    const distance = controls.target.distanceTo(targetNotebookPosition);
+    const distance2 = camera.position.distanceTo(cameraNotebookPosition);
 
-  if (distance > CAMERA_THRESHOLDS.NOTEBOOK_DISTANCE && isNotebookOpen) {
-    console.log("📔 Closing notebook - camera moved away");
-    CloseNoteBook();
+    if (distance > CAMERA_THRESHOLDS.NOTEBOOK_DISTANCE ) {
+      console.log("📔 Closing notebook - camera moved away");
+      CloseNoteBook();
+    }
+    if (distance2 > CAMERA_THRESHOLDS.POSITION_DISTANCE ) {
+      CloseNoteBook();
+    }
   }
-  if (distance2 > CAMERA_THRESHOLDS.POSITION_DISTANCE && isNotebookOpen) {
-    CloseNoteBook();
+  if (isAboutMeOpen) 
+    {
+    const distanceToAboutMe = controls.target.distanceTo(targetResumePosition);
+    const distanceToAboutMe2 = camera.position.distanceTo(cameraResumePosition);
+    if (distanceToAboutMe > CAMERA_THRESHOLDS.POSITION_DISTANCE ) {
+      HideAboutMe();
+    }
+    if (distanceToAboutMe2 > CAMERA_THRESHOLDS.POSITION_DISTANCE ) {
+      HideAboutMe();
+    }
   }
+ 
+
+
 
   // Always update camera controls and render - this should be 60fps
   if (controls && controls.enabled) {
@@ -1512,7 +1532,7 @@ function CloseNoteBook() {
     }
   });
 
-  
+
   // Rotate notebook back
   gsap.to(notebookObject.rotation, {
     x: -Math.PI / 2,
@@ -1522,7 +1542,46 @@ function CloseNoteBook() {
     ease: 'power2.inOut'
   })
   notebookObject.userData.initialRotation = new THREE.Euler(-Math.PI / 2, Math.PI / 2, Math.PI / 2);
-  
+
+  // Reset camera to original position
+
+}
+function HideAboutMe() {
+
+
+isAboutMeOpen = false;
+
+  // Rotate notebook back
+  gsap.to(aboutMeObject.scale, {
+    x: 1,
+    y: 0,
+    z: 1,
+    duration: 0.5,
+    ease: 'power2.inOut'
+  })
+  notebookObject.userData.initialRotation = new THREE.Euler(-Math.PI / 2, Math.PI / 2, Math.PI / 2);
+
+  // Reset camera to original position
+
+}
+function ShowAboutMe() {
+
+
+
+
+  // Rotate notebook back
+  gsap.to(aboutMeObject.scale, {
+    x: 1,
+    y: 1,
+    z: 1,
+    duration: 0.5,
+    ease: 'power2.inOut',
+    onComplete: function () {
+      isAboutMeOpen = true;
+    }
+  })
+  notebookObject.userData.initialRotation = new THREE.Euler(-Math.PI / 2, Math.PI / 2, Math.PI / 2);
+
   // Reset camera to original position
 
 }
@@ -1546,6 +1605,7 @@ function resetCameraPosition() {
     ease: 'power2.inOut'
   });
   CloseNoteBook();
+  HideAboutMe();
 }
 /**
  * Animates camera to focus on the notebook
@@ -1575,7 +1635,11 @@ function zoomCameraToResume() {
     y: cameraResumePosition.y,
     z: cameraResumePosition.z,
     duration: 0.5,
-    ease: 'power2.inOut'
+    ease: 'power2.inOut',
+    onComplete: function () {
+      isCameraMoving = false;
+      ShowAboutMe();
+    }
   })
   gsap.to(controls.target, {
     x: targetResumePosition.x,
@@ -1616,7 +1680,7 @@ function OnHover(object, isHovering) {
   gsap.killTweensOf(object.rotation);
   gsap.killTweensOf(object.position);
 
-  
+
   // Don't animate objects that are scaled down (hidden)
   if (object.scale.x < CAMERA_THRESHOLDS.CLOSE_DISTANCE) {
     return;
@@ -1638,7 +1702,7 @@ function OnHover(object, isHovering) {
       duration: HOVER_CONFIG.ANIMATION_DURATION,
       ease: HOVER_CONFIG.EASE_IN,
     });
-  } 
+  }
   else {
 
     // Return to original state
@@ -1681,7 +1745,7 @@ function macHover(object, isHovering) {
   if (isHovering) {
     gsap.to(object.rotation, {
       x: object.userData.initialRotation.x,
-      y: object.userData.initialRotation.y-.5,
+      y: object.userData.initialRotation.y - .5,
       z: object.userData.initialRotation.z,
       duration: HOVER_CONFIG.ANIMATION_DURATION,
       ease: HOVER_CONFIG.EASE_IN,
@@ -1700,7 +1764,7 @@ function macHover(object, isHovering) {
 function switchMode(e) {
   //is dark mode frrrom modal.js 
   scene.traverse(child => {
-    if (child.isMesh&& !child.name.includes("Hitbox")) {
+    if (child.isMesh && !child.name.includes("Hitbox")) {
       if (child.name.includes("First")) {
         child.material.map = e === 'dark' ? loadedTexture.First.night : loadedTexture.First.day;
       }
